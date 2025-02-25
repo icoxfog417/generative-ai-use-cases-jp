@@ -15,7 +15,6 @@ import SharedChatPage from './pages/SharedChatPage';
 import TodaysEnglishPage from './pages/TodaysEnglishPage';
 import SummarizePage from './pages/SummarizePage';
 import GenerateTextPage from './pages/GenerateTextPage';
-import EditorialPage from './pages/EditorialPage';
 import TranslatePage from './pages/TranslatePage';
 import VideoAnalyzerPage from './pages/VideoAnalyzerPage';
 import NotFound from './pages/NotFound';
@@ -37,7 +36,9 @@ import UseCaseBuilderSamplesPage from './pages/useCaseBuilder/UseCaseBuilderSamp
 import UseCaseBuilderMyUseCasePage from './pages/useCaseBuilder/UseCaseBuilderMyUseCasePage.tsx';
 import { optimizePromptEnabled } from './hooks/useOptimizePrompt';
 import GenerateDiagramPage from './pages/GenerateDiagramPage.tsx';
+import WriterPage from './pages/WriterPage.tsx';
 import useUseCases from './hooks/useUseCases';
+import { Toaster } from 'sonner';
 
 const ragEnabled: boolean = import.meta.env.VITE_APP_RAG_ENABLED === 'true';
 const ragKnowledgeBaseEnabled: boolean =
@@ -89,10 +90,10 @@ const routes: RouteObject[] = [
         element: <SummarizePage />,
       }
     : null,
-  enabled('editorial')
+  enabled('writer')
     ? {
-        path: '/editorial',
-        element: <EditorialPage />,
+        path: '/writer',
+        element: <WriterPage />,
       }
     : null,
   enabled('translate')
@@ -237,6 +238,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Authenticator.Provider>
       <RouterProvider router={router} />
+      <Toaster />
     </Authenticator.Provider>
   </React.StrictMode>
 );

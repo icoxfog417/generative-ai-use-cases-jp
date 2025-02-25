@@ -151,7 +151,8 @@ arn:aws:kendra:ap-northeast-1:333333333333:index/77777777-3333-4444-aaaa-1111111
 
 ### RAG チャット (Knowledge Base) ユースケースの有効化
 
-`ragKnowledgeBaseEnabled` に `true` を指定します。(デフォルトは `false`)
+`ragKnowledgeBaseEnabled` に `true` を指定します。(デフォルトは `false`)  
+作成ずみのKnowledge Baseがある場合、`ragKnowledgeBaseId` にナレッジベースIDを設定します。(`null`の場合、OpenSearch Serverlessのナレッジベースが作成されます)
 
 **[parameter.ts](/packages/cdk/parameter.ts) を編集**
 ```typescript
@@ -159,6 +160,7 @@ arn:aws:kendra:ap-northeast-1:333333333333:index/77777777-3333-4444-aaaa-1111111
 const envs: Record<string, Partial<StackInput>> = {
   dev: {
     ragKnowledgeBaseEnabled: true,
+    ragKnowledgeBaseId: 'XXXXXXXXXX',
     ragKnowledgeBaseStandbyReplicas: false,
     ragKnowledgeBaseAdvancedParsing: false,
     ragKnowledgeBaseAdvancedParsingModelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
@@ -173,6 +175,7 @@ const envs: Record<string, Partial<StackInput>> = {
 {
   "context": {
     "ragKnowledgeBaseEnabled": true,
+    "ragKnowledgeBaseId": "XXXXXXXXXX",
     "ragKnowledgeBaseStandbyReplicas": false,
     "ragKnowledgeBaseAdvancedParsing": false,
     "ragKnowledgeBaseAdvancedParsingModelId": "anthropic.claude-3-sonnet-20240229-v1:0",
@@ -243,6 +246,7 @@ Status が Available になれば完了です。S3 に保存されているフ�
 const envs: Record<string, Partial<StackInput>> = {
   dev: {
     ragKnowledgeBaseEnabled: true,
+    ragKnowledgeBaseId: 'XXXXXXXXXX',
     ragKnowledgeBaseStandbyReplicas: false,
     ragKnowledgeBaseAdvancedParsing: true,
     ragKnowledgeBaseAdvancedParsingModelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
@@ -257,6 +261,7 @@ const envs: Record<string, Partial<StackInput>> = {
 {
   "context": {
     "ragKnowledgeBaseEnabled": true,
+    "ragKnowledgeBaseId": "XXXXXXXXXX",
     "ragKnowledgeBaseStandbyReplicas": false,
     "ragKnowledgeBaseAdvancedParsing": true,
     "ragKnowledgeBaseAdvancedParsingModelId": "anthropic.claude-3-sonnet-20240229-v1:0",
@@ -660,7 +665,7 @@ const envs: Record<string, Partial<StackInput>> = {
     hiddenUseCases: {
       generate: true, // 文章生成を非表示
       summarize: true, // 要約を非表示
-      editorial: true, // 校正を非表示
+      writer: true, // 執筆を非表示
       translate: true, // 翻訳を非表示
       webContent: true, // Web コンテンツ抽出を非表示
       image: true, // 画像生成を非表示
@@ -679,7 +684,7 @@ const envs: Record<string, Partial<StackInput>> = {
     "hiddenUseCases": {
       "generate": true,
       "summarize": true,
-      "editorial": true,
+      "writer": true,
       "translate": true,
       "webContent": true,
       "image": true,
@@ -731,6 +736,7 @@ const envs: Record<string, Partial<StackInput>> = {
 "anthropic.claude-3-opus-20240229-v1:0",
 "anthropic.claude-3-sonnet-20240229-v1:0",
 "anthropic.claude-3-haiku-20240307-v1:0",
+"us.anthropic.claude-3-7-sonnet-20250219-v1:0",
 "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
 "us.anthropic.claude-3-5-haiku-20241022-v1:0",
 "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
@@ -931,6 +937,7 @@ const envs: Record<string, Partial<StackInput>> = {
   dev: {
     modelRegion: 'us-east-2',
     modelIds: [
+      "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
       "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
@@ -971,6 +978,7 @@ const envs: Record<string, Partial<StackInput>> = {
   "context": {
     "modelRegion": "us-west-2",
     "modelIds": [
+      "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
       "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
