@@ -12,6 +12,7 @@ import LandingPage from './pages/LandingPage';
 import Setting from './pages/Setting';
 import ChatPage from './pages/ChatPage';
 import SharedChatPage from './pages/SharedChatPage';
+import TodaysEnglishPage from './pages/TodaysEnglishPage';
 import SummarizePage from './pages/SummarizePage';
 import GenerateTextPage from './pages/GenerateTextPage';
 import TranslatePage from './pages/TranslatePage';
@@ -72,6 +73,10 @@ const routes: RouteObject[] = [
   {
     path: '/share/:shareId',
     element: <SharedChatPage />,
+  },
+  {
+    path: '/todays-english',
+    element: <TodaysEnglishPage />,
   },
   enabled('generate')
     ? {
