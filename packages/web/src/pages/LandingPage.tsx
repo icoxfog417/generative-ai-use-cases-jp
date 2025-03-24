@@ -10,6 +10,7 @@ import {
   PiTranslate,
   PiGlobe,
   PiImages,
+  PiVideoLight,
   PiNotebook,
   PiPen,
   PiRobot,
@@ -24,6 +25,7 @@ import {
   AgentPageQueryParams,
   ChatPageQueryParams,
   GenerateImagePageQueryParams,
+  GenerateVideoPageQueryParams,
   GenerateTextPageQueryParams,
   InterUseCaseParams,
   RagPageQueryParams,
@@ -127,12 +129,19 @@ const LandingPage: React.FC = () => {
     navigate(`/image?${queryString.stringify(params)}`);
   };
 
+  const demoGenerateVideo = () => {
+    const params: GenerateVideoPageQueryParams = {
+      prompt: 'A banana is dancing in the middle of the ocean',
+    };
+    navigate(`/video?${queryString.stringify(params)}`);
+  };
+
   const demoVideoAnalyzer = () => {
     const params: VideoAnalyzerPageQueryParams = {
       content:
         '映っているものを説明してください。もし映っているものに文字が書かれている場合はそれも読んでください。',
     };
-    navigate(`/video?${queryString.stringify(params)}`);
+    navigate(`/video-analyzer?${queryString.stringify(params)}`);
   };
 
   const demoGenerateDiagram = () => {
@@ -280,7 +289,7 @@ const LandingPage: React.FC = () => {
         ユースケース一覧
       </h1>
 
-      <div className="mx-20 grid gap-x-20 gap-y-5 md:grid-cols-1 xl:grid-cols-2">
+      <div className="mx-4 grid gap-x-20 gap-y-5 md:grid-cols-1 xl:mx-20 xl:grid-cols-2">
         <CardDemo
           label="チャット"
           onClickDemo={demoChat}
@@ -369,6 +378,14 @@ const LandingPage: React.FC = () => {
             description="画像生成 AI は、テキストや画像を元に新しい画像を生成できます。アイデアを即座に可視化することができ、デザイン作業などの効率化を期待できます。こちらの機能では、プロンプトの作成を LLM に支援してもらうことができます。"
           />
         )}
+        {enabled('video') && (
+          <CardDemo
+            label="動画生成"
+            onClickDemo={demoGenerateVideo}
+            icon={<PiVideoLight />}
+            description="動画生成 AI はテキストから短い動画を生成します。生成した動画は素材としてさまざまなシーンで活用できます。"
+          />
+        )}
         {visionEnabled && enabled('video') && (
           <CardDemo
             label="映像分析"
@@ -398,7 +415,7 @@ const LandingPage: React.FC = () => {
               ユースケース連携
             </h1>
 
-            <div className="mx-20 grid gap-x-20 gap-y-5 md:grid-cols-1 xl:grid-cols-2">
+            <div className="mx-4 grid gap-x-20 gap-y-5 md:grid-cols-1 xl:mx-20 xl:grid-cols-2">
               {enabled('webContent', 'generate', 'summarize', 'image') && (
                 <CardDemo
                   label="ブログ記事作成"
