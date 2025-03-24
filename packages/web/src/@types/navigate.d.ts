@@ -74,3 +74,7 @@ export type VideoAnalyzerPageQueryParams = BaseQueryParams & {
 export type DiagramPageQueryParams = BaseQueryParams & {
   content: string;
 };
+
+export type TodaysEnglishQueryParams = BaseQueryParams & {
+  word?: string;
+};

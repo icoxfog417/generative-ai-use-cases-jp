@@ -20,6 +20,7 @@ import {
   PiFlowArrow,
   PiMagicWand,
   PiTreeStructure,
+  PiBirdLight
 } from 'react-icons/pi';
 import { Outlet } from 'react-router-dom';
 import Drawer, { ItemProps } from './components/Drawer';
@@ -82,6 +83,12 @@ const App: React.FC = () => {
       label: 'チャット',
       to: '/chat',
       icon: <PiChatsCircle />,
+      display: 'usecase' as const,
+    },
+    {
+      label: "Today's English",
+      to: '/todays-english',
+      icon: <PiBirdLight />,
       display: 'usecase' as const,
     },
     ragEnabled
