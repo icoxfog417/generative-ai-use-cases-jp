@@ -31,17 +31,17 @@ const envs: Record<string, Partial<StackInput>> = {
     allowedSignUpEmailDomains: ["amazon.com", "amazon.co.jp"],
     ragKnowledgeBaseEnabled: true,
     modelIds: [
-      "us.anthropic.claude-opus-4-20250514-v1:0",
-      "us.anthropic.claude-sonnet-4-20250514-v1:0",
       "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
       "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
       "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "us.anthropic.claude-opus-4-20250514-v1:0",
+      "us.anthropic.claude-sonnet-4-20250514-v1:0",
       "us.amazon.nova-premier-v1:0",
       "us.amazon.nova-pro-v1:0",
       "us.amazon.nova-lite-v1:0",
       "us.amazon.nova-micro-v1:0",
       "us.deepseek.r1-v1:0",
-      "us.writer.palmyra-x5-v1:0"
+      { modelId: "us.writer.palmyra-x5-v1:0", region: "us-west-2" },
     ],
     imageGenerationModelIds: [
       "amazon.nova-canvas-v1:0",
