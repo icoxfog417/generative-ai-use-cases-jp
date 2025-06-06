@@ -65,6 +65,11 @@ export type DiagramParams = {
   diagramType?: string;
 };
 
+export type MeetingMinutesParams = {
+  style: 'standard' | 'executive' | 'detailed' | 'custom';
+  customPrompt?: string;
+};
+
 export type PromptListItem = {
   title: string;
   systemContext: string;
@@ -91,4 +96,5 @@ export interface Prompter {
   setTitlePrompt(params: SetTitleParams): string;
   promptList(t: TFunction): PromptList;
   diagramPrompt(params: DiagramParams): string;
+  meetingMinutesPrompt(params: MeetingMinutesParams): string;
 }
