@@ -1,9 +1,8 @@
 import { useState, useCallback } from 'react';
 import useChatApi from './useChatApi';
-import useModel from './useModel';
+import { MODELS } from './useModel';
 import { getPrompter } from '../prompts';
-import { BaseMessage, Content, Model } from 'generative-ai-use-cases-jp';
-import { produce } from 'immer';
+import { UnrecordedMessage, Model } from 'generative-ai-use-cases';
 
 export type MeetingMinutesStyle =
   | 'standard'
@@ -13,7 +12,7 @@ export type MeetingMinutesStyle =
 
 export const useMeetingMinutes = () => {
   const { predictStream } = useChatApi();
-  const { modelIds: availableModels, textModels } = useModel();
+  const { modelIds: availableModels, textModels } = MODELS;
 
   // Meeting minutes specific state
   const [minutesStyle, setMinutesStyle] =
@@ -48,31 +47,31 @@ export const useMeetingMinutes = () => {
       onGenerate?.('generating');
 
       try {
-        const prompter = getPrompter(model);
+        const prompter = getPrompter(modelId);
 
         const promptContent =
           minutesStyle === 'custom' && customPrompt
             ? customPrompt
             : prompter.meetingMinutesPrompt({
-                transcript,
-                format: minutesStyle as 'standard' | 'executive' | 'detailed',
+                style: minutesStyle,
+                customPrompt,
               });
 
-        const messages: BaseMessage[] = [
+        const messages: UnrecordedMessage[] = [
+          {
+            role: 'system',
+            content: promptContent,
+          },
           {
             role: 'user',
-            content: [
-              {
-                contentType: 'text',
-                body: promptContent,
-              },
-            ] as Content[],
+            content: transcript,
           },
         ];
 
         const stream = predictStream({
           model: model as Model,
           messages,
+          id: `meeting-minutes-${Date.now()}`,
         });
 
         let fullResponse = '';
@@ -81,7 +80,7 @@ export const useMeetingMinutes = () => {
         for await (const chunk of stream) {
           if (chunk) {
             fullResponse += chunk;
-            setGeneratedMinutes(produce((draft) => draft + chunk));
+            setGeneratedMinutes((prev) => prev + chunk);
           }
         }
 
