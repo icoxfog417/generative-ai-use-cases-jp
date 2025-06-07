@@ -627,7 +627,6 @@ meetingMinutes:
   frequency_1min: Every 1 minute
   frequency_5min: Every 5 minutes
   generate: Generate
-  generate_minutes: Generate Minutes
   generate_minutes_header: Generate Minutes
   generated_minutes: Generated Minutes
   generating: Generating minutes...
@@ -636,7 +635,7 @@ meetingMinutes:
   last_generated: Last generated {{time}}
   minutes_placeholder: Minutes will appear here after generation
   model: Model
-  next_generation_in: Next generation in
+  next_generation_in: 'Next generation in : '
   record_transcribe: Record & Transcribe
   speech_recognition: Speech Recognition
   style: Minutes Style

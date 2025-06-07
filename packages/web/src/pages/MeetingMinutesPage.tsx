@@ -155,7 +155,11 @@ const MeetingMinutesPage: React.FC = () => {
 
   // Watch for generation signal and trigger generation
   useEffect(() => {
-    if (shouldGenerateRef.current && autoGenerate && formattedOutput.trim() !== '') {
+    if (
+      shouldGenerateRef.current &&
+      autoGenerate &&
+      formattedOutput.trim() !== ''
+    ) {
       if (formattedOutput !== lastProcessedTranscript && !minutesLoading) {
         shouldGenerateRef.current = false; // Reset the flag
         generateMinutes(formattedOutput, modelId, (status) => {
@@ -169,7 +173,16 @@ const MeetingMinutesPage: React.FC = () => {
         shouldGenerateRef.current = false; // Reset even if we don't generate
       }
     }
-  }, [countdownSeconds]);
+  }, [
+    countdownSeconds,
+    autoGenerate,
+    formattedOutput,
+    lastProcessedTranscript,
+    minutesLoading,
+    generateMinutes,
+    modelId,
+    t,
+  ]);
 
   // Auto-generation countdown setup
   useEffect(() => {
@@ -191,7 +204,7 @@ const MeetingMinutesPage: React.FC = () => {
 
     // Set up countdown timer (updates every second)
     countdownIntervalRef.current = setInterval(() => {
-      setCountdownSeconds(prev => {
+      setCountdownSeconds((prev) => {
         const newValue = prev - 1;
         if (newValue <= 0) {
           shouldGenerateRef.current = true; // Signal generation should happen
@@ -206,10 +219,7 @@ const MeetingMinutesPage: React.FC = () => {
         clearInterval(countdownIntervalRef.current);
       }
     };
-  }, [
-    autoGenerate,
-    generationFrequency,
-  ]);
+  }, [autoGenerate, generationFrequency]);
 
   const disabledExec = useMemo(() => {
     return !file || loading || recording;
@@ -280,10 +290,7 @@ const MeetingMinutesPage: React.FC = () => {
   // Style change detection to trigger minutes regeneration
   useEffect(() => {
     // Only regenerate if style has changed, we have transcript content, and we're not in the initial render
-    if (
-      previousStyle !== minutesStyle &&
-      formattedOutput.trim() !== ''
-    ) {
+    if (previousStyle !== minutesStyle && formattedOutput.trim() !== '') {
       handleManualGeneration();
     }
 
@@ -495,11 +502,15 @@ const MeetingMinutesPage: React.FC = () => {
                       checked={autoGenerate}
                       onSwitch={setAutoGenerate}
                     />
+                    {/* eslint-disable @shopify/jsx-no-hardcoded-content */}
                     {autoGenerate && countdownSeconds > 0 && (
                       <div className="text-sm text-gray-600">
-                        {t('meetingMinutes.next_generation_in')}: {Math.floor(countdownSeconds / 60)}:{(countdownSeconds % 60).toString().padStart(2, '0')}
+                        {t('meetingMinutes.next_generation_in')}
+                        {Math.floor(countdownSeconds / 60)}:
+                        {(countdownSeconds % 60).toString().padStart(2, '0')}
                       </div>
                     )}
+                    {/* eslint-enable @shopify/jsx-no-hardcoded-content */}
                   </div>
                 </div>
                 {autoGenerate && (

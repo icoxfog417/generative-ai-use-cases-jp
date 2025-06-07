@@ -24,7 +24,8 @@ export const useMeetingMinutes = () => {
   const [lastGeneratedTime, setLastGeneratedTime] = useState<Date | null>(null);
   const [customPrompt, setCustomPrompt] = useState('');
   const [loading, setLoading] = useState(false);
-  const [autoGenerateSessionTimestamp, setAutoGenerateSessionTimestamp] = useState<number | null>(null);
+  const [autoGenerateSessionTimestamp, setAutoGenerateSessionTimestamp] =
+    useState<number | null>(null);
 
   const generateMinutes = useCallback(
     async (
@@ -109,7 +110,13 @@ export const useMeetingMinutes = () => {
         setLoading(false);
       }
     },
-    [minutesStyle, customPrompt, predictStream, textModels]
+    [
+      minutesStyle,
+      customPrompt,
+      predictStream,
+      textModels,
+      autoGenerateSessionTimestamp,
+    ]
   );
 
   const handleAutoGenerateToggle = useCallback((enabled: boolean) => {
