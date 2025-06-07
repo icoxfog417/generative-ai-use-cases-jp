@@ -107,7 +107,12 @@ const MeetingMinutesPage: React.FC = () => {
     setCustomPrompt,
     loading: minutesLoading,
     generateMinutes,
+    clearMinutes,
   } = useMeetingMinutes();
+
+  // Track previous style to detect changes
+  const [previousStyle, setPreviousStyle] =
+    useState<typeof minutesStyle>('standard');
 
   const speakerMapping = useMemo(() => {
     return Object.fromEntries(
@@ -228,7 +233,7 @@ const MeetingMinutesPage: React.FC = () => {
 
   const onClickExec = useCallback(() => {
     if (loading) return;
-    setContent([]);
+    // Don't clear existing transcripts - append instead
     stopTranscription();
     clearTranscripts();
     transcribe(speakerLabel, maxSpeakers);
@@ -236,7 +241,6 @@ const MeetingMinutesPage: React.FC = () => {
     loading,
     speakerLabel,
     maxSpeakers,
-    setContent,
     stopTranscription,
     clearTranscripts,
     transcribe,
@@ -275,6 +279,27 @@ const MeetingMinutesPage: React.FC = () => {
     }
   }, [formattedOutput, minutesLoading, modelId, generateMinutes, t]);
 
+  // Clear minutes only handler
+  const handleClearMinutes = useCallback(() => {
+    // Clear generated minutes but keep transcript
+    clearMinutes();
+  }, [clearMinutes]);
+
+  // Style change detection to trigger minutes regeneration
+  useEffect(() => {
+    // Only regenerate if style has changed, we have transcript content, and we're not in the initial render
+    if (
+      previousStyle !== minutesStyle &&
+      formattedOutput.trim() !== '' &&
+      previousStyle !== 'standard'
+    ) {
+      handleManualGeneration();
+    }
+
+    // Update previous style for next comparison
+    setPreviousStyle(minutesStyle);
+  }, [minutesStyle, formattedOutput, handleManualGeneration, previousStyle]);
+
   return (
     <div className="grid grid-cols-12">
       <div className="invisible col-span-12 my-0 flex h-0 items-center justify-center text-xl font-semibold lg:visible lg:my-5 lg:h-min print:visible print:my-5 print:h-min">
@@ -282,184 +307,246 @@ const MeetingMinutesPage: React.FC = () => {
       </div>
       <div className="col-span-12 col-start-1 mx-2 lg:col-span-10 lg:col-start-2 xl:col-span-10 xl:col-start-2">
         <Card>
-          {/* Meeting Minutes Configuration */}
-          <div className="mb-4 flex flex-col justify-center sm:flex-row">
-            <div className="basis-1/3 p-2">
-              <label className="mb-2 block font-bold">
-                {t('meetingMinutes.style')}
-              </label>
-              <Select
-                value={minutesStyle}
-                onChange={(value) =>
-                  setMinutesStyle(value as typeof minutesStyle)
-                }
-                options={[
-                  {
-                    value: 'standard',
-                    label: t('meetingMinutes.style_standard'),
-                  },
-                  {
-                    value: 'executive',
-                    label: t('meetingMinutes.style_executive'),
-                  },
-                  {
-                    value: 'detailed',
-                    label: t('meetingMinutes.style_detailed'),
-                  },
-                  { value: 'custom', label: t('meetingMinutes.style_custom') },
-                ]}
-              />
-            </div>
-            <div className="basis-1/3 p-2">
-              <label className="mb-2 block font-bold">
-                {t('common.model')}
-              </label>
-              <Select
-                value={modelId}
-                onChange={setModelId}
-                options={availableModels.map((id: string) => ({
-                  value: id,
-                  label: modelDisplayName(id),
-                }))}
-              />
-            </div>
-          </div>
-
-          {/* Show custom prompt textarea when custom style is selected */}
-          {minutesStyle === 'custom' && (
-            <div className="mb-4 p-2">
-              <Textarea
-                label={t('meetingMinutes.custom_prompt')}
-                value={customPrompt}
-                onChange={setCustomPrompt}
-                placeholder={t('meetingMinutes.custom_prompt_placeholder')}
-                rows={4}
-              />
-            </div>
-          )}
-
-          {/* Auto-generation controls */}
-          <div className="mb-4 flex flex-col justify-center sm:flex-row">
-            <div className="basis-1/2 p-2">
-              <Switch
-                label={t('meetingMinutes.auto_generate')}
-                checked={autoGenerate}
-                onSwitch={setAutoGenerate}
-              />
-            </div>
-            {autoGenerate && (
-              <div className="basis-1/2 p-2">
-                <Select
-                  label={t('meetingMinutes.frequency')}
-                  value={generationFrequency.toString()}
-                  onChange={(value) => setGenerationFrequency(parseInt(value))}
-                  options={[
-                    { value: '1', label: t('meetingMinutes.frequency_1min') },
-                    { value: '5', label: t('meetingMinutes.frequency_5min') },
-                    { value: '10', label: t('meetingMinutes.frequency_10min') },
-                  ]}
-                />
+          {/* Two-column layout */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {/* Left Column - Record & Transcribe */}
+            <div>
+              {/* Header */}
+              <div className="mb-4 border-b pb-2">
+                <h2 className="text-lg font-semibold">
+                  {t('meetingMinutes.record_transcribe')}
+                </h2>
               </div>
-            )}
-          </div>
 
-          <div className="mb-2 flex justify-center text-sm text-gray-500">
-            {t('transcribe.select_input_method')}
-          </div>
-          <div className="mb-4 flex flex-col justify-center sm:flex-row">
-            <div className="basis-1/2 p-2 xl:basis-2/5">
-              <label className="mb-2 block font-bold">
-                {t('transcribe.mic_input')}
-              </label>
-              <div className="flex justify-center">
-                {recording ? (
-                  <Button
-                    className="h-10 w-full"
-                    onClick={stopTranscription}
-                    disabled={disabledMicExec}>
-                    <PiStopCircleBold className="mr-2 h-5 w-5" />
-                    {t('transcribe.stop_recording')}
-                  </Button>
-                ) : (
-                  <Button
-                    className="h-10 w-full"
-                    disabled={disabledMicExec}
-                    onClick={() => {
-                      if (!disabledMicExec) {
-                        onClickExecStartTranscription();
-                      }
-                    }}
-                    outlined={true}>
-                    <PiMicrophoneBold className="mr-2 h-5 w-5" />
-                    {t('transcribe.start_recording')}
-                  </Button>
-                )}
-              </div>
-            </div>
-            <div className="basis-1/2 p-2 xl:basis-2/5">
-              <label className="mb-2 block font-bold" htmlFor="file_input">
-                {t('transcribe.file_upload')}
-              </label>
-              <input
-                className="border-aws-font-color/20 block h-10 w-full cursor-pointer rounded-lg border
+              {/* Audio Input Controls */}
+              <div className="mb-4">
+                <div className="mb-2 flex justify-center text-sm text-gray-500">
+                  {t('transcribe.select_input_method')}
+                </div>
+                <div className="mb-4 flex flex-col justify-center sm:flex-row">
+                  <div className="basis-1/2 p-2 xl:basis-2/5">
+                    <label className="mb-2 block font-bold">
+                      {t('transcribe.mic_input')}
+                    </label>
+                    <div className="flex justify-center">
+                      {recording ? (
+                        <Button
+                          className="h-10 w-full"
+                          onClick={stopTranscription}
+                          disabled={disabledMicExec}>
+                          <PiStopCircleBold className="mr-2 h-5 w-5" />
+                          {t('transcribe.stop_recording')}
+                        </Button>
+                      ) : (
+                        <Button
+                          className="h-10 w-full"
+                          disabled={disabledMicExec}
+                          onClick={() => {
+                            if (!disabledMicExec) {
+                              onClickExecStartTranscription();
+                            }
+                          }}
+                          outlined={true}>
+                          <PiMicrophoneBold className="mr-2 h-5 w-5" />
+                          {t('transcribe.start_recording')}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="basis-1/2 p-2 xl:basis-2/5">
+                    <label
+                      className="mb-2 block font-bold"
+                      htmlFor="file_input">
+                      {t('transcribe.file_upload')}
+                    </label>
+                    <input
+                      className="border-aws-font-color/20 block h-10 w-full cursor-pointer rounded-lg border
                 text-sm text-gray-900 file:mr-4 file:cursor-pointer file:border-0 file:bg-gray-500
                 file:px-4 file:py-2.5 file:text-white focus:outline-none"
-                onChange={onChangeFile}
-                aria-describedby="file_input_help"
-                id="file_input"
-                type="file"
-                accept=".mp3, .mp4, .wav, .flac, .ogg, .amr, .webm, .m4a"
-                ref={ref}></input>
-              <p
-                className="ml-0.5 mt-1 text-xs text-gray-500"
-                id="file_input_help">
-                {t('transcribe.supported_files')}
-              </p>
-            </div>
-          </div>
-          <ExpandableField
-            label={t('transcribe.detailed_parameters')}
-            className="p-2"
-            notItem={true}>
-            <div className="grid grid-cols-2 gap-2 pt-2">
-              <Switch
-                label={t('transcribe.speaker_recognition')}
-                checked={speakerLabel}
-                onSwitch={setSpeakerLabel}
-              />
-              {speakerLabel && (
-                <RangeSlider
-                  className=""
-                  label={t('transcribe.max_speakers')}
-                  min={2}
-                  max={10}
-                  value={maxSpeakers}
-                  onChange={setMaxSpeakers}
-                  help={t('transcribe.max_speakers_help')}
-                />
-              )}
-            </div>
-            {speakerLabel && (
-              <div className="">
-                <Textarea
-                  placeholder={t('transcribe.speaker_names')}
-                  value={speakers}
-                  onChange={setSpeakers}
-                />
+                      onChange={onChangeFile}
+                      aria-describedby="file_input_help"
+                      id="file_input"
+                      type="file"
+                      accept=".mp3, .mp4, .wav, .flac, .ogg, .amr, .webm, .m4a"
+                      ref={ref}></input>
+                    <p
+                      className="ml-0.5 mt-1 text-xs text-gray-500"
+                      id="file_input_help">
+                      {t('transcribe.supported_files')}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Speaker Recognition Parameters */}
+                <ExpandableField
+                  label={t('transcribe.detailed_parameters')}
+                  className="mb-4"
+                  notItem={true}>
+                  <div className="grid grid-cols-2 gap-2 pt-2">
+                    <Switch
+                      label={t('transcribe.speaker_recognition')}
+                      checked={speakerLabel}
+                      onSwitch={setSpeakerLabel}
+                    />
+                    {speakerLabel && (
+                      <RangeSlider
+                        className=""
+                        label={t('transcribe.max_speakers')}
+                        min={2}
+                        max={10}
+                        value={maxSpeakers}
+                        onChange={setMaxSpeakers}
+                        help={t('transcribe.max_speakers_help')}
+                      />
+                    )}
+                  </div>
+                  {speakerLabel && (
+                    <div className="mt-2">
+                      <Textarea
+                        placeholder={t('transcribe.speaker_names')}
+                        value={speakers}
+                        onChange={setSpeakers}
+                      />
+                    </div>
+                  )}
+                </ExpandableField>
+
+                {/* Left Column Buttons */}
+                <div className="flex justify-end gap-3">
+                  <Button
+                    outlined
+                    disabled={disableClearExec}
+                    onClick={onClickClear}>
+                    {t('common.clear')}
+                  </Button>
+                  <Button disabled={disabledExec} onClick={onClickExec}>
+                    {t('meetingMinutes.speech_recognition')}
+                  </Button>
+                </div>
               </div>
-            )}
-          </ExpandableField>
-          <div className="flex justify-end gap-3">
-            <Button outlined disabled={disableClearExec} onClick={onClickClear}>
-              {t('common.clear')}
-            </Button>
-            <Button disabled={disabledExec} onClick={onClickExec}>
-              {t('common.execute')}
-            </Button>
+            </div>
+
+            {/* Right Column - Generate Minutes */}
+            <div>
+              {/* Header */}
+              <div className="mb-4 border-b pb-2">
+                <h2 className="text-lg font-semibold">
+                  {t('meetingMinutes.generate_minutes_header')}
+                </h2>
+              </div>
+
+              {/* Meeting Minutes Configuration */}
+              <div className="mb-4">
+                <div className="mb-4">
+                  <label className="mb-2 block font-bold">
+                    {t('meetingMinutes.style')}
+                  </label>
+                  <Select
+                    value={minutesStyle}
+                    onChange={(value) =>
+                      setMinutesStyle(value as typeof minutesStyle)
+                    }
+                    options={[
+                      {
+                        value: 'standard',
+                        label: t('meetingMinutes.style_standard'),
+                      },
+                      {
+                        value: 'executive',
+                        label: t('meetingMinutes.style_executive'),
+                      },
+                      {
+                        value: 'detailed',
+                        label: t('meetingMinutes.style_detailed'),
+                      },
+                      {
+                        value: 'custom',
+                        label: t('meetingMinutes.style_custom'),
+                      },
+                    ]}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="mb-2 block font-bold">
+                    {t('meetingMinutes.model')}
+                  </label>
+                  <Select
+                    value={modelId}
+                    onChange={setModelId}
+                    options={availableModels.map((id: string) => ({
+                      value: id,
+                      label: modelDisplayName(id),
+                    }))}
+                  />
+                </div>
+
+                {/* Show custom prompt textarea when custom style is selected */}
+                {minutesStyle === 'custom' && (
+                  <div className="mb-4">
+                    <Textarea
+                      label={t('meetingMinutes.custom_prompt')}
+                      value={customPrompt}
+                      onChange={setCustomPrompt}
+                      placeholder={t(
+                        'meetingMinutes.custom_prompt_placeholder'
+                      )}
+                      rows={4}
+                    />
+                  </div>
+                )}
+
+                {/* Auto-generation controls */}
+                <div className="mb-4">
+                  <Switch
+                    label={t('meetingMinutes.auto_generate')}
+                    checked={autoGenerate}
+                    onSwitch={setAutoGenerate}
+                  />
+                </div>
+                {autoGenerate && (
+                  <div className="mb-4">
+                    <Select
+                      label={t('meetingMinutes.frequency')}
+                      value={generationFrequency.toString()}
+                      onChange={(value) =>
+                        setGenerationFrequency(parseInt(value))
+                      }
+                      options={[
+                        {
+                          value: '1',
+                          label: t('meetingMinutes.frequency_1min'),
+                        },
+                        {
+                          value: '5',
+                          label: t('meetingMinutes.frequency_5min'),
+                        },
+                        {
+                          value: '10',
+                          label: t('meetingMinutes.frequency_10min'),
+                        },
+                      ]}
+                    />
+                  </div>
+                )}
+
+                {/* Right Column Buttons */}
+                <div className="flex justify-end gap-3">
+                  <Button outlined onClick={handleClearMinutes}>
+                    {t('common.clear')}
+                  </Button>
+                  <Button
+                    onClick={handleManualGeneration}
+                    disabled={formattedOutput === '' || minutesLoading}>
+                    {t('meetingMinutes.generate')}
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Split view for transcript and generated minutes */}
-          <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* Transcript Panel */}
             <div className="rounded border border-black/30 p-1.5">
               <div className="mb-2 font-bold">
@@ -531,15 +618,6 @@ const MeetingMinutesPage: React.FC = () => {
                 />
               </div>
             </div>
-          </div>
-
-          {/* Control bar between panels */}
-          <div className="mt-4 flex justify-center gap-3">
-            <Button
-              onClick={handleManualGeneration}
-              disabled={formattedOutput === '' || minutesLoading}>
-              {t('meetingMinutes.generate_minutes')}
-            </Button>
           </div>
         </Card>
       </div>

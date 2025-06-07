@@ -626,13 +626,18 @@ meetingMinutes:
   frequency_10min: Every 10 minutes
   frequency_1min: Every 1 minute
   frequency_5min: Every 5 minutes
+  generate: Generate
   generate_minutes: Generate Minutes
+  generate_minutes_header: Generate Minutes
   generated_minutes: Generated Minutes
   generating: Generating minutes...
   generation_error: Failed to generate meeting minutes. Please try again.
   generation_success: Meeting minutes generated successfully
   last_generated: Last generated {{time}}
   minutes_placeholder: Minutes will appear here after generation
+  model: Model
+  record_transcribe: Record & Transcribe
+  speech_recognition: Speech Recognition
   style: Minutes Style
   style_custom: Custom
   style_detailed: Detailed

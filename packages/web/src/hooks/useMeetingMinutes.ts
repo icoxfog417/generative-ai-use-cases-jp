@@ -79,8 +79,22 @@ export const useMeetingMinutes = () => {
 
         for await (const chunk of stream) {
           if (chunk) {
-            fullResponse += chunk;
-            setGeneratedMinutes((prev) => prev + chunk);
+            const chunks = chunk.split('\n');
+
+            for (const c of chunks) {
+              if (c && c.length > 0) {
+                try {
+                  const payload = JSON.parse(c) as { text: string };
+                  if (payload.text && payload.text.length > 0) {
+                    fullResponse += payload.text;
+                    setGeneratedMinutes((prev) => prev + payload.text);
+                  }
+                } catch (error) {
+                  // Skip invalid JSON chunks
+                  console.debug('Skipping invalid JSON chunk:', c);
+                }
+              }
+            }
           }
         }
 
