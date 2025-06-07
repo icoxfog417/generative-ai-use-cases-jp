@@ -224,7 +224,7 @@ const App: React.FC = () => {
       label: t('navigation.meetingMinutes'),
       to: '/meeting-minutes',
       icon: <PiFileText />,
-      display: 'tool' as const,
+      display: 'usecase' as const,
     },
     optimizePromptEnabled
       ? {

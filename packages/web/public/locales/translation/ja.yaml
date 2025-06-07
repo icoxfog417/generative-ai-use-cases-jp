@@ -554,13 +554,14 @@ meetingMinutes:
   last_generated: 最後の生成時刻 {{time}}
   minutes_placeholder: 生成後にここに議事録が表示されます
   model: モデル
+  next_generation_in: 次回生成まで
   record_transcribe: 録音・文字起こし
   speech_recognition: 音声認識
   style: 議事録スタイル
   style_custom: カスタム
-  style_detailed: 詳細
-  style_executive: エグゼクティブサマリー
-  style_standard: 標準
+  style_faq: 質疑応答
+  style_newspaper: 新聞
+  style_transcription: 文字起こし
   title: 議事録生成
   transcript: 文字起こし
 model:

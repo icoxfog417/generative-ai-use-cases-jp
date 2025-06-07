@@ -636,13 +636,14 @@ meetingMinutes:
   last_generated: Last generated {{time}}
   minutes_placeholder: Minutes will appear here after generation
   model: Model
+  next_generation_in: Next generation in
   record_transcribe: Record & Transcribe
   speech_recognition: Speech Recognition
   style: Minutes Style
   style_custom: Custom
-  style_detailed: Detailed
-  style_executive: Executive Summary
-  style_standard: Standard
+  style_faq: FAQ
+  style_newspaper: Newspaper
+  style_transcription: Transcription
   title: Meeting Minutes Generator
   transcript: Transcript
 model:
