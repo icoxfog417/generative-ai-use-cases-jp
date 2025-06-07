@@ -5,9 +5,9 @@ import { getPrompter } from '../prompts';
 import { UnrecordedMessage, Model } from 'generative-ai-use-cases';
 
 export type MeetingMinutesStyle =
-  | 'standard'
-  | 'executive'
-  | 'detailed'
+  | 'transcription'
+  | 'newspaper'
+  | 'faq'
   | 'custom';
 
 export const useMeetingMinutes = () => {
@@ -16,7 +16,7 @@ export const useMeetingMinutes = () => {
 
   // Meeting minutes specific state
   const [minutesStyle, setMinutesStyle] =
-    useState<MeetingMinutesStyle>('standard');
+    useState<MeetingMinutesStyle>('transcription');
   const [autoGenerate, setAutoGenerate] = useState(false);
   const [generationFrequency, setGenerationFrequency] = useState(5); // in minutes
   const [generatedMinutes, setGeneratedMinutes] = useState('');
@@ -24,6 +24,8 @@ export const useMeetingMinutes = () => {
   const [lastGeneratedTime, setLastGeneratedTime] = useState<Date | null>(null);
   const [customPrompt, setCustomPrompt] = useState('');
   const [loading, setLoading] = useState(false);
+  const [autoGenerateSessionTimestamp, setAutoGenerateSessionTimestamp] =
+    useState<number | null>(null);
 
   const generateMinutes = useCallback(
     async (
@@ -38,7 +40,6 @@ export const useMeetingMinutes = () => {
 
       const model = textModels.find((m) => m.modelId === modelId);
       if (!model) {
-        console.error('Model not found:', modelId);
         onGenerate?.('error', { message: 'Model not found' });
         return;
       }
@@ -71,7 +72,7 @@ export const useMeetingMinutes = () => {
         const stream = predictStream({
           model: model as Model,
           messages,
-          id: `meeting-minutes-${Date.now()}`,
+          id: `meeting-minutes-${autoGenerateSessionTimestamp || Date.now()}`,
         });
 
         let fullResponse = '';
@@ -102,7 +103,6 @@ export const useMeetingMinutes = () => {
         setLastGeneratedTime(new Date());
         onGenerate?.('success', { minutes: fullResponse });
       } catch (error) {
-        console.error('Error generating minutes:', error);
         onGenerate?.('error', {
           message: error instanceof Error ? error.message : 'Unknown error',
         });
@@ -110,13 +110,31 @@ export const useMeetingMinutes = () => {
         setLoading(false);
       }
     },
-    [minutesStyle, customPrompt, predictStream, textModels]
+    [
+      minutesStyle,
+      customPrompt,
+      predictStream,
+      textModels,
+      autoGenerateSessionTimestamp,
+    ]
   );
+
+  const handleAutoGenerateToggle = useCallback((enabled: boolean) => {
+    setAutoGenerate(enabled);
+    if (enabled) {
+      // Set timestamp when auto-generation starts
+      setAutoGenerateSessionTimestamp(Date.now());
+    } else {
+      // Clear timestamp when auto-generation stops
+      setAutoGenerateSessionTimestamp(null);
+    }
+  }, []);
 
   const clearMinutes = useCallback(() => {
     setGeneratedMinutes('');
     setLastProcessedTranscript('');
     setLastGeneratedTime(null);
+    setAutoGenerateSessionTimestamp(null);
   }, []);
 
   return {
@@ -124,7 +142,7 @@ export const useMeetingMinutes = () => {
     minutesStyle,
     setMinutesStyle,
     autoGenerate,
-    setAutoGenerate,
+    setAutoGenerate: handleAutoGenerateToggle,
     generationFrequency,
     setGenerationFrequency,
     generatedMinutes,

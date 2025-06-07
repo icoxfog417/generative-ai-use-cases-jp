@@ -558,51 +558,20 @@ Output only the selected chart type from the <Choice> list, with an exact match,
       );
   },
   meetingMinutesPrompt(params: MeetingMinutesParams): string {
-    const basePrompt =
-      'You are a professional meeting assistant. Create structured meeting minutes from the following transcript.';
-
     if (params.style === 'custom' && params.customPrompt) {
       return params.customPrompt;
     }
 
     switch (params.style) {
-      case 'executive':
-        return `${basePrompt}
-        
-Format as an executive summary with:
-- Meeting overview (2-3 sentences)
-- Key decisions made
-- Strategic action items with owners and deadlines
-- Next steps and follow-up meetings
+      case 'newspaper':
+        return `As a professional journalist. You will receive transcribed text from reporters and craft an article while preserving as much of the original content volume as possible to deliver comprehensive information to your audience. For your audience, you must write the article in received text language.`;
 
-Use bullet points and keep it concise for senior leadership.`;
+      case 'faq':
+        return `As a professional assistant, please identify the conversation topic and write an abstract summarizing the theme along with question-and-answer pairs that preserve the original information content as much as possible. For your boss, you must write in received conversation language.`;
 
-      case 'detailed':
-        return `${basePrompt}
-        
-Format with comprehensive structure including:
-- Meeting details (date, time, attendees)
-- Agenda items discussed
-- Detailed discussion points for each topic
-- All decisions made with rationale
-- Complete action items with owners, deadlines, and dependencies
-- Open questions and concerns raised
-- Next meeting details
-
-Use clear headings, numbered lists, and detailed bullet points.`;
-
-      case 'standard':
+      case 'transcription':
       default:
-        return `${basePrompt}
-        
-Format with standard structure:
-- Meeting summary
-- Main discussion points
-- Decisions made
-- Action items (owner, deadline)
-- Next steps
-
-Use clear headings and bullet points. Be concise but comprehensive.`;
+        return `As a professional translator, please correct filler words and misrecognition in received transcribed text. Please add paragraph breaks if you detect obvious topic changes, and if you find important statements related to the topic, please format them in bold style. For speakers, you must transcribe in received text language.`;
     }
   },
 };

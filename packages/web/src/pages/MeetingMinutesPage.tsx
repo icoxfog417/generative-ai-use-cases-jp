@@ -86,7 +86,11 @@ const MeetingMinutesPage: React.FC = () => {
     setSpeakers,
   } = useMeetingMinutesState();
   const ref = useRef<HTMLInputElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const shouldGenerateRef = useRef<boolean>(false);
+
+  // Countdown state for auto-generation timer
+  const [countdownSeconds, setCountdownSeconds] = useState(0);
 
   // Model selection state
   const { modelIds: availableModels, modelDisplayName } = MODELS;
@@ -112,7 +116,7 @@ const MeetingMinutesPage: React.FC = () => {
 
   // Track previous style to detect changes
   const [previousStyle, setPreviousStyle] =
-    useState<typeof minutesStyle>('standard');
+    useState<typeof minutesStyle>('transcription');
 
   const speakerMapping = useMemo(() => {
     return Object.fromEntries(
@@ -149,75 +153,73 @@ const MeetingMinutesPage: React.FC = () => {
     }
   }, [setContent, transcriptMic]);
 
-  // Clean up interval on unmount
+  // Watch for generation signal and trigger generation
   useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
-
-  // Auto-generation logic with proper cleanup
-  useEffect(() => {
-    // Clear existing interval
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    if (!autoGenerate || generationFrequency <= 0 || !formattedOutput) return;
-
-    // Initial generation if needed
     if (
-      formattedOutput !== lastProcessedTranscript &&
-      !minutesLoading &&
+      shouldGenerateRef.current &&
+      autoGenerate &&
       formattedOutput.trim() !== ''
     ) {
-      generateMinutes(formattedOutput, modelId, (status) => {
-        if (status === 'success') {
-          toast.success(t('meetingMinutes.generation_success'));
-        } else if (status === 'error') {
-          toast.error(t('meetingMinutes.generation_error'));
-        }
-      });
-    }
-
-    // Set up interval for periodic generation
-    intervalRef.current = setInterval(
-      () => {
-        if (
-          formattedOutput !== lastProcessedTranscript &&
-          !minutesLoading &&
-          formattedOutput.trim() !== ''
-        ) {
-          generateMinutes(formattedOutput, modelId, (status) => {
-            if (status === 'success') {
-              toast.success(t('meetingMinutes.generation_success'));
-            } else if (status === 'error') {
-              toast.error(t('meetingMinutes.generation_error'));
-            }
-          });
-        }
-      },
-      generationFrequency * 60 * 1000
-    ); // Convert minutes to milliseconds
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+      if (formattedOutput !== lastProcessedTranscript && !minutesLoading) {
+        shouldGenerateRef.current = false; // Reset the flag
+        generateMinutes(formattedOutput, modelId, (status) => {
+          if (status === 'success') {
+            toast.success(t('meetingMinutes.generation_success'));
+          } else if (status === 'error') {
+            toast.error(t('meetingMinutes.generation_error'));
+          }
+        });
+      } else {
+        shouldGenerateRef.current = false; // Reset even if we don't generate
       }
-    };
+    }
   }, [
+    countdownSeconds,
     autoGenerate,
-    generationFrequency,
     formattedOutput,
     lastProcessedTranscript,
     minutesLoading,
-    modelId,
     generateMinutes,
+    modelId,
     t,
   ]);
+
+  // Auto-generation countdown setup
+  useEffect(() => {
+    // Clear existing interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+
+    // Early return if auto-generate is disabled
+    if (!autoGenerate || generationFrequency <= 0) {
+      setCountdownSeconds(0);
+      return;
+    }
+
+    // Initialize countdown
+    const totalSeconds = generationFrequency * 60;
+    setCountdownSeconds(totalSeconds);
+
+    // Set up countdown timer (updates every second)
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdownSeconds((prev) => {
+        const newValue = prev - 1;
+        if (newValue <= 0) {
+          shouldGenerateRef.current = true; // Signal generation should happen
+          return totalSeconds; // Reset countdown
+        }
+        return newValue;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+      }
+    };
+  }, [autoGenerate, generationFrequency]);
 
   const disabledExec = useMemo(() => {
     return !file || loading || recording;
@@ -288,11 +290,7 @@ const MeetingMinutesPage: React.FC = () => {
   // Style change detection to trigger minutes regeneration
   useEffect(() => {
     // Only regenerate if style has changed, we have transcript content, and we're not in the initial render
-    if (
-      previousStyle !== minutesStyle &&
-      formattedOutput.trim() !== '' &&
-      previousStyle !== 'standard'
-    ) {
+    if (previousStyle !== minutesStyle && formattedOutput.trim() !== '') {
       handleManualGeneration();
     }
 
@@ -448,16 +446,16 @@ const MeetingMinutesPage: React.FC = () => {
                     }
                     options={[
                       {
-                        value: 'standard',
-                        label: t('meetingMinutes.style_standard'),
+                        value: 'transcription',
+                        label: t('meetingMinutes.style_transcription'),
                       },
                       {
-                        value: 'executive',
-                        label: t('meetingMinutes.style_executive'),
+                        value: 'newspaper',
+                        label: t('meetingMinutes.style_newspaper'),
                       },
                       {
-                        value: 'detailed',
-                        label: t('meetingMinutes.style_detailed'),
+                        value: 'faq',
+                        label: t('meetingMinutes.style_faq'),
                       },
                       {
                         value: 'custom',
@@ -498,11 +496,22 @@ const MeetingMinutesPage: React.FC = () => {
 
                 {/* Auto-generation controls */}
                 <div className="mb-4">
-                  <Switch
-                    label={t('meetingMinutes.auto_generate')}
-                    checked={autoGenerate}
-                    onSwitch={setAutoGenerate}
-                  />
+                  <div className="flex items-center justify-between">
+                    <Switch
+                      label={t('meetingMinutes.auto_generate')}
+                      checked={autoGenerate}
+                      onSwitch={setAutoGenerate}
+                    />
+                    {/* eslint-disable @shopify/jsx-no-hardcoded-content */}
+                    {autoGenerate && countdownSeconds > 0 && (
+                      <div className="text-sm text-gray-600">
+                        {t('meetingMinutes.next_generation_in')}
+                        {Math.floor(countdownSeconds / 60)}:
+                        {(countdownSeconds % 60).toString().padStart(2, '0')}
+                      </div>
+                    )}
+                    {/* eslint-enable @shopify/jsx-no-hardcoded-content */}
+                  </div>
                 </div>
                 {autoGenerate && (
                   <div className="mb-4">
@@ -549,8 +558,16 @@ const MeetingMinutesPage: React.FC = () => {
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* Transcript Panel */}
             <div className="rounded border border-black/30 p-1.5">
-              <div className="mb-2 font-bold">
-                {t('meetingMinutes.transcript')}
+              <div className="mb-2 flex items-center justify-between">
+                <div className="font-bold">
+                  {t('meetingMinutes.transcript')}
+                </div>
+                {formattedOutput.trim() !== '' && (
+                  <ButtonCopy
+                    text={formattedOutput}
+                    interUseCasesKey="transcript"
+                  />
+                )}
               </div>
               {content.length > 0 && (
                 <div>
@@ -575,26 +592,28 @@ const MeetingMinutesPage: React.FC = () => {
               {loading && (
                 <div className="border-aws-sky size-5 animate-spin rounded-full border-4 border-t-transparent"></div>
               )}
-              <div className="mt-2 flex w-full justify-end">
-                <ButtonCopy
-                  text={formattedOutput}
-                  interUseCasesKey="transcript"
-                />
-              </div>
             </div>
 
             {/* Generated Minutes Panel */}
             <div className="rounded border border-black/30 p-1.5">
               <div className="mb-2 flex items-center justify-between">
-                <div className="font-bold">
-                  {t('meetingMinutes.generated_minutes')}
-                </div>
-                {lastGeneratedTime && (
-                  <div className="text-sm text-gray-500">
-                    {t('meetingMinutes.last_generated', {
-                      time: lastGeneratedTime.toLocaleTimeString(),
-                    })}
+                <div className="flex items-center gap-2">
+                  <div className="font-bold">
+                    {t('meetingMinutes.generated_minutes')}
                   </div>
+                  {lastGeneratedTime && (
+                    <div className="text-sm text-gray-500">
+                      {t('meetingMinutes.last_generated', {
+                        time: lastGeneratedTime.toLocaleTimeString(),
+                      })}
+                    </div>
+                  )}
+                </div>
+                {generatedMinutes.trim() !== '' && (
+                  <ButtonCopy
+                    text={generatedMinutes}
+                    interUseCasesKey="minutes"
+                  />
                 )}
               </div>
               <Markdown>{generatedMinutes}</Markdown>
@@ -611,12 +630,6 @@ const MeetingMinutesPage: React.FC = () => {
                   </span>
                 </div>
               )}
-              <div className="mt-2 flex w-full justify-end gap-2">
-                <ButtonCopy
-                  text={generatedMinutes}
-                  interUseCasesKey="minutes"
-                />
-              </div>
             </div>
           </div>
         </Card>
