@@ -11,6 +11,7 @@ import {
   VideoAnalyzerParams,
   WebContentParams,
   DiagramParams,
+  MeetingMinutesParams,
 } from './index';
 
 import {
@@ -555,6 +556,54 @@ Output only the selected chart type from the <Choice> list, with an exact match,
         diagramSystemPrompts[params.diagramType!] ||
         diagramSystemPrompts.FlowChart
       );
+  },
+  meetingMinutesPrompt(params: MeetingMinutesParams): string {
+    const basePrompt =
+      'You are a professional meeting assistant. Create structured meeting minutes from the following transcript.';
+
+    if (params.style === 'custom' && params.customPrompt) {
+      return params.customPrompt;
+    }
+
+    switch (params.style) {
+      case 'executive':
+        return `${basePrompt}
+        
+Format as an executive summary with:
+- Meeting overview (2-3 sentences)
+- Key decisions made
+- Strategic action items with owners and deadlines
+- Next steps and follow-up meetings
+
+Use bullet points and keep it concise for senior leadership.`;
+
+      case 'detailed':
+        return `${basePrompt}
+        
+Format with comprehensive structure including:
+- Meeting details (date, time, attendees)
+- Agenda items discussed
+- Detailed discussion points for each topic
+- All decisions made with rationale
+- Complete action items with owners, deadlines, and dependencies
+- Open questions and concerns raised
+- Next meeting details
+
+Use clear headings, numbered lists, and detailed bullet points.`;
+
+      case 'standard':
+      default:
+        return `${basePrompt}
+        
+Format with standard structure:
+- Meeting summary
+- Main discussion points
+- Decisions made
+- Action items (owner, deadline)
+- Next steps
+
+Use clear headings and bullet points. Be concise but comprehensive.`;
+    }
   },
 };
 

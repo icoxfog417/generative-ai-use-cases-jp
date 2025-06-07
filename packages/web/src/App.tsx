@@ -21,6 +21,7 @@ import {
   PiMagicWand,
   PiMicrophoneBold,
   PiTreeStructure,
+  PiFileText,
 } from 'react-icons/pi';
 import { Outlet } from 'react-router-dom';
 import Drawer, { ItemProps } from './components/Drawer';
@@ -217,6 +218,12 @@ const App: React.FC = () => {
       label: t('navigation.speechRecognition'),
       to: '/transcribe',
       icon: <PiSpeakerHighBold />,
+      display: 'tool' as const,
+    },
+    {
+      label: t('navigation.meetingMinutes'),
+      to: '/meeting-minutes',
+      icon: <PiFileText />,
       display: 'tool' as const,
     },
     optimizePromptEnabled
