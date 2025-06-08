@@ -9,11 +9,17 @@ import { create } from 'zustand';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import ButtonCopy from '../components/ButtonCopy';
+import ButtonSendToUseCase from '../components/ButtonSendToUseCase';
+import ButtonIcon from '../components/ButtonIcon';
 import useTranscribe from '../hooks/useTranscribe';
 import useMicrophone from '../hooks/useMicrophone';
 import useMeetingMinutes from '../hooks/useMeetingMinutes';
 import { MODELS } from '../hooks/useModel';
-import { PiStopCircleBold, PiMicrophoneBold } from 'react-icons/pi';
+import {
+  PiStopCircleBold,
+  PiMicrophoneBold,
+  PiPencilLine,
+} from 'react-icons/pi';
 import Switch from '../components/Switch';
 import RangeSlider from '../components/RangeSlider';
 import ExpandableField from '../components/ExpandableField';
@@ -23,6 +29,9 @@ import Textarea from '../components/Textarea';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import Markdown from '../components/Markdown';
+import { useNavigate } from 'react-router-dom';
+import queryString from 'query-string';
+import { MeetingMinutesStyle } from '../hooks/useMeetingMinutes';
 
 type StateType = {
   content: Transcript[];
@@ -33,6 +42,22 @@ type StateType = {
   setMaxSpeakers: (n: number) => void;
   speakers: string;
   setSpeakers: (s: string) => void;
+  generatedMinutes: string;
+  setGeneratedMinutes: (s: string) => void;
+  lastProcessedTranscript: string;
+  setLastProcessedTranscript: (s: string) => void;
+  lastGeneratedTime: Date | null;
+  setLastGeneratedTime: (d: Date | null) => void;
+  minutesStyle: MeetingMinutesStyle;
+  setMinutesStyle: (s: MeetingMinutesStyle) => void;
+  autoGenerate: boolean;
+  setAutoGenerate: (b: boolean) => void;
+  generationFrequency: number;
+  setGenerationFrequency: (n: number) => void;
+  customPrompt: string;
+  setCustomPrompt: (s: string) => void;
+  autoGenerateSessionTimestamp: number | null;
+  setAutoGenerateSessionTimestamp: (timestamp: number | null) => void;
 };
 
 const useMeetingMinutesState = create<StateType>((set) => {
@@ -41,6 +66,14 @@ const useMeetingMinutesState = create<StateType>((set) => {
     speakerLabel: false, // Disabled by default per requirements
     maxSpeakers: 4, // Reasonable default for meetings
     speakers: '',
+    generatedMinutes: '',
+    lastProcessedTranscript: '',
+    lastGeneratedTime: null,
+    minutesStyle: 'faq' as MeetingMinutesStyle,
+    autoGenerate: false,
+    generationFrequency: 5,
+    customPrompt: '',
+    autoGenerateSessionTimestamp: null,
     setContent: (s: Transcript[]) => {
       set(() => ({
         content: s,
@@ -61,11 +94,52 @@ const useMeetingMinutesState = create<StateType>((set) => {
         speakers: s,
       }));
     },
+    setGeneratedMinutes: (s: string) => {
+      set(() => ({
+        generatedMinutes: s,
+      }));
+    },
+    setLastProcessedTranscript: (s: string) => {
+      set(() => ({
+        lastProcessedTranscript: s,
+      }));
+    },
+    setLastGeneratedTime: (d: Date | null) => {
+      set(() => ({
+        lastGeneratedTime: d,
+      }));
+    },
+    setMinutesStyle: (s: MeetingMinutesStyle) => {
+      set(() => ({
+        minutesStyle: s,
+      }));
+    },
+    setAutoGenerate: (b: boolean) => {
+      set(() => ({
+        autoGenerate: b,
+      }));
+    },
+    setGenerationFrequency: (n: number) => {
+      set(() => ({
+        generationFrequency: n,
+      }));
+    },
+    setCustomPrompt: (s: string) => {
+      set(() => ({
+        customPrompt: s,
+      }));
+    },
+    setAutoGenerateSessionTimestamp: (timestamp: number | null) => {
+      set(() => ({
+        autoGenerateSessionTimestamp: timestamp,
+      }));
+    },
   };
 });
 
 const MeetingMinutesPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { loading, transcriptData, file, setFile, transcribe, clear } =
     useTranscribe();
   const {
@@ -84,6 +158,22 @@ const MeetingMinutesPage: React.FC = () => {
     setMaxSpeakers,
     speakers,
     setSpeakers,
+    generatedMinutes,
+    setGeneratedMinutes,
+    lastProcessedTranscript,
+    setLastProcessedTranscript,
+    lastGeneratedTime,
+    setLastGeneratedTime,
+    minutesStyle,
+    setMinutesStyle,
+    autoGenerate,
+    setAutoGenerate,
+    generationFrequency,
+    setGenerationFrequency,
+    customPrompt,
+    setCustomPrompt,
+    autoGenerateSessionTimestamp,
+    setAutoGenerateSessionTimestamp,
   } = useMeetingMinutesState();
   const ref = useRef<HTMLInputElement>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -96,27 +186,19 @@ const MeetingMinutesPage: React.FC = () => {
   const { modelIds: availableModels, modelDisplayName } = MODELS;
   const [modelId, setModelId] = useState(availableModels[0] || '');
 
-  // Meeting minutes specific hook
+  // Meeting minutes specific hook with external state
   const {
-    minutesStyle,
-    setMinutesStyle,
-    autoGenerate,
-    setAutoGenerate,
-    generationFrequency,
-    setGenerationFrequency,
-    generatedMinutes,
-    lastProcessedTranscript,
-    lastGeneratedTime,
-    customPrompt,
-    setCustomPrompt,
     loading: minutesLoading,
     generateMinutes,
     clearMinutes,
-  } = useMeetingMinutes();
-
-  // Track previous style to detect changes
-  const [previousStyle, setPreviousStyle] =
-    useState<typeof minutesStyle>('faq');
+  } = useMeetingMinutes(
+    minutesStyle,
+    customPrompt,
+    autoGenerateSessionTimestamp,
+    setGeneratedMinutes,
+    setLastProcessedTranscript,
+    setLastGeneratedTime
+  );
 
   const speakerMapping = useMemo(() => {
     return Object.fromEntries(
@@ -303,31 +385,6 @@ const MeetingMinutesPage: React.FC = () => {
     // Clear generated minutes but keep transcript
     clearMinutes();
   }, [clearMinutes]);
-
-  // Style change detection to trigger minutes regeneration
-  useEffect(() => {
-    // Only regenerate if style has changed, we have transcript content, and we're not in the initial render
-    // Skip auto-generation when switching to custom style or when custom style lacks a prompt
-    if (
-      previousStyle !== minutesStyle &&
-      formattedOutput.trim() !== '' &&
-      !(
-        minutesStyle === 'custom' &&
-        (!customPrompt || customPrompt.trim() === '')
-      )
-    ) {
-      handleManualGeneration();
-    }
-
-    // Update previous style for next comparison
-    setPreviousStyle(minutesStyle);
-  }, [
-    minutesStyle,
-    formattedOutput,
-    handleManualGeneration,
-    previousStyle,
-    customPrompt,
-  ]);
 
   return (
     <div className="grid grid-cols-12">
@@ -531,7 +588,14 @@ const MeetingMinutesPage: React.FC = () => {
                     <Switch
                       label={t('meetingMinutes.auto_generate')}
                       checked={autoGenerate}
-                      onSwitch={setAutoGenerate}
+                      onSwitch={(checked) => {
+                        setAutoGenerate(checked);
+                        if (checked) {
+                          setAutoGenerateSessionTimestamp(Date.now());
+                        } else {
+                          setAutoGenerateSessionTimestamp(null);
+                        }
+                      }}
                     />
                     {/* eslint-disable @shopify/jsx-no-hardcoded-content */}
                     {autoGenerate && countdownSeconds > 0 && (
@@ -599,16 +663,18 @@ const MeetingMinutesPage: React.FC = () => {
                   {t('meetingMinutes.transcript')}
                 </div>
                 {formattedOutput.trim() !== '' && (
-                  <ButtonCopy
-                    text={formattedOutput}
-                    interUseCasesKey="transcript"
-                  />
+                  <div className="flex">
+                    <ButtonCopy
+                      text={formattedOutput}
+                      interUseCasesKey="transcript"></ButtonCopy>
+                    <ButtonSendToUseCase text={formattedOutput} />
+                  </div>
                 )}
               </div>
               {content.length > 0 && (
                 <div>
                   {content.map((transcript, idx) => (
-                    <div key={idx} className="flex">
+                    <div key={idx} className="flex gap-2">
                       {transcript.speakerLabel && (
                         <div className="min-w-20">
                           {speakerMapping[transcript.speakerLabel] ||
@@ -646,10 +712,21 @@ const MeetingMinutesPage: React.FC = () => {
                   )}
                 </div>
                 {generatedMinutes.trim() !== '' && (
-                  <ButtonCopy
-                    text={generatedMinutes}
-                    interUseCasesKey="minutes"
-                  />
+                  <div className="flex gap-2">
+                    <ButtonCopy
+                      text={generatedMinutes}
+                      interUseCasesKey="minutes"
+                    />
+                    <ButtonIcon
+                      onClick={() => {
+                        navigate(
+                          `/writer?${queryString.stringify({ sentence: generatedMinutes })}`
+                        );
+                      }}
+                      title={t('navigation.writing')}>
+                      <PiPencilLine />
+                    </ButtonIcon>
+                  </div>
                 )}
               </div>
               <Markdown>{generatedMinutes}</Markdown>

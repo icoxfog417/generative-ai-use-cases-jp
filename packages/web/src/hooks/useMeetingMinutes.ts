@@ -10,21 +10,19 @@ export type MeetingMinutesStyle =
   | 'transcription'
   | 'custom';
 
-export const useMeetingMinutes = () => {
+export const useMeetingMinutes = (
+  minutesStyle: MeetingMinutesStyle,
+  customPrompt: string,
+  autoGenerateSessionTimestamp: number | null,
+  setGeneratedMinutes: (minutes: string) => void,
+  setLastProcessedTranscript: (transcript: string) => void,
+  setLastGeneratedTime: (time: Date | null) => void
+) => {
   const { predictStream } = useChatApi();
   const { modelIds: availableModels, textModels } = MODELS;
 
-  // Meeting minutes specific state
-  const [minutesStyle, setMinutesStyle] = useState<MeetingMinutesStyle>('faq');
-  const [autoGenerate, setAutoGenerate] = useState(false);
-  const [generationFrequency, setGenerationFrequency] = useState(5); // in minutes
-  const [generatedMinutes, setGeneratedMinutes] = useState('');
-  const [lastProcessedTranscript, setLastProcessedTranscript] = useState('');
-  const [lastGeneratedTime, setLastGeneratedTime] = useState<Date | null>(null);
-  const [customPrompt, setCustomPrompt] = useState('');
+  // Only keep local state for temporary values
   const [loading, setLoading] = useState(false);
-  const [autoGenerateSessionTimestamp, setAutoGenerateSessionTimestamp] =
-    useState<number | null>(null);
 
   const generateMinutes = useCallback(
     async (
@@ -87,7 +85,7 @@ export const useMeetingMinutes = () => {
                   const payload = JSON.parse(c) as { text: string };
                   if (payload.text && payload.text.length > 0) {
                     fullResponse += payload.text;
-                    setGeneratedMinutes((prev) => prev + payload.text);
+                    setGeneratedMinutes(fullResponse);
                   }
                 } catch (error) {
                   // Skip invalid JSON chunks
@@ -115,43 +113,20 @@ export const useMeetingMinutes = () => {
       predictStream,
       textModels,
       autoGenerateSessionTimestamp,
+      setGeneratedMinutes,
+      setLastGeneratedTime,
+      setLastProcessedTranscript,
     ]
   );
-
-  const handleAutoGenerateToggle = useCallback((enabled: boolean) => {
-    setAutoGenerate(enabled);
-    if (enabled) {
-      // Set timestamp when auto-generation starts
-      setAutoGenerateSessionTimestamp(Date.now());
-    } else {
-      // Clear timestamp when auto-generation stops
-      setAutoGenerateSessionTimestamp(null);
-    }
-  }, []);
 
   const clearMinutes = useCallback(() => {
     setGeneratedMinutes('');
     setLastProcessedTranscript('');
     setLastGeneratedTime(null);
-    setAutoGenerateSessionTimestamp(null);
-  }, []);
+  }, [setGeneratedMinutes, setLastProcessedTranscript, setLastGeneratedTime]);
 
   return {
     // State
-    minutesStyle,
-    setMinutesStyle,
-    autoGenerate,
-    setAutoGenerate: handleAutoGenerateToggle,
-    generationFrequency,
-    setGenerationFrequency,
-    generatedMinutes,
-    setGeneratedMinutes,
-    lastProcessedTranscript,
-    setLastProcessedTranscript,
-    lastGeneratedTime,
-    setLastGeneratedTime,
-    customPrompt,
-    setCustomPrompt,
     loading,
 
     // Actions

@@ -558,6 +558,11 @@ landing:
       description: >-
         Image generation AI can create new images based on text or images. It allows immediate visualization of ideas and can be expected to improve efficiency in design work. In this feature, you can get LLM assistance in creating prompts.
       title: Image Generation
+    meeting-minutes:
+      description: >-
+        Automatically generate meeting minutes from audio recordings or real-time transcription.
+        No need to write prompts - choose from near-original transcription, newspaper style, or FAQ format.
+      title: Meeting Minutes Generation
     rag_chat:
       description_kb: >-
         RAG (Retrieval Augmented Generation) is a method that combines information retrieval and LLM text generation, enabling effective information access.
