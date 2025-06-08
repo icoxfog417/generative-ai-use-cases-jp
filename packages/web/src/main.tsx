@@ -140,10 +140,12 @@ const routes: RouteObject[] = [
     path: '/transcribe',
     element: <TranscribePage />,
   },
-  {
-    path: '/meeting-minutes',
-    element: <MeetingMinutesPage />,
-  },
+  enabled('meetingMinutes')
+    ? {
+        path: '/meeting-minutes',
+        element: <MeetingMinutesPage />,
+      }
+    : null,
   {
     path: '/flow-chat',
     element: <FlowChatPage />,

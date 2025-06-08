@@ -78,6 +78,11 @@ GenU provides a variety of standard use cases leveraging generative AI. These us
         <td>Diagram generation visualizes text and content on any topic using optimal diagrams. It allows for easy text-based diagram creation, enabling efficient creation of flowcharts and other diagrams even for non-programmers and non-designers.</td>
       </tr>
       <tr>
+        <td>Meeting Minutes</td>
+        <td>Automatically generate meeting minutes from audio recordings or real-time transcription. Choose from Transcription, News Paper, or FAQ style with zero prompt engineering required.
+        </td>
+      </tr>
+      <tr>
         <td>Voice Chat</td>
         <td>In Voice Chat, you can have a bidirectional voice chat with generative AI. Similar to natural conversation, you can also interrupt and speak while the AI is talking. Also, by setting a system prompt, you can have voice conversations with AI that has specific roles.</td>
       </tr>

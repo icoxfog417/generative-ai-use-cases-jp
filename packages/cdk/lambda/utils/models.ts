@@ -242,6 +242,14 @@ const USECASE_DEFAULT_PARAMS: UsecaseConverseInferenceParams = {
       },
     },
   },
+  '/meeting-minutes': {
+    promptCachingConfig: {
+      autoCacheFields: {
+        system: true,
+        messages: true,
+      },
+    },
+  },
   '/use-case-builder': {
     promptCachingConfig: {
       autoCacheFields: {

@@ -116,7 +116,7 @@ const MeetingMinutesPage: React.FC = () => {
 
   // Track previous style to detect changes
   const [previousStyle, setPreviousStyle] =
-    useState<typeof minutesStyle>('transcription');
+    useState<typeof minutesStyle>('faq');
 
   const speakerMapping = useMemo(() => {
     return Object.fromEntries(
@@ -270,6 +270,15 @@ const MeetingMinutesPage: React.FC = () => {
 
   // Manual generation handler
   const handleManualGeneration = useCallback(() => {
+    // Validate custom prompt when using custom style
+    if (
+      minutesStyle === 'custom' &&
+      (!customPrompt || customPrompt.trim() === '')
+    ) {
+      toast.error(t('meetingMinutes.custom_prompt_placeholder'));
+      return;
+    }
+
     if (formattedOutput.trim() !== '' && !minutesLoading) {
       generateMinutes(formattedOutput, modelId, (status) => {
         if (status === 'success') {
@@ -279,7 +288,15 @@ const MeetingMinutesPage: React.FC = () => {
         }
       });
     }
-  }, [formattedOutput, minutesLoading, modelId, generateMinutes, t]);
+  }, [
+    formattedOutput,
+    minutesLoading,
+    modelId,
+    generateMinutes,
+    t,
+    minutesStyle,
+    customPrompt,
+  ]);
 
   // Clear minutes only handler
   const handleClearMinutes = useCallback(() => {
@@ -290,13 +307,27 @@ const MeetingMinutesPage: React.FC = () => {
   // Style change detection to trigger minutes regeneration
   useEffect(() => {
     // Only regenerate if style has changed, we have transcript content, and we're not in the initial render
-    if (previousStyle !== minutesStyle && formattedOutput.trim() !== '') {
+    // Skip auto-generation when switching to custom style or when custom style lacks a prompt
+    if (
+      previousStyle !== minutesStyle &&
+      formattedOutput.trim() !== '' &&
+      !(
+        minutesStyle === 'custom' &&
+        (!customPrompt || customPrompt.trim() === '')
+      )
+    ) {
       handleManualGeneration();
     }
 
     // Update previous style for next comparison
     setPreviousStyle(minutesStyle);
-  }, [minutesStyle, formattedOutput, handleManualGeneration, previousStyle]);
+  }, [
+    minutesStyle,
+    formattedOutput,
+    handleManualGeneration,
+    previousStyle,
+    customPrompt,
+  ]);
 
   return (
     <div className="grid grid-cols-12">
@@ -446,16 +477,16 @@ const MeetingMinutesPage: React.FC = () => {
                     }
                     options={[
                       {
-                        value: 'transcription',
-                        label: t('meetingMinutes.style_transcription'),
+                        value: 'faq',
+                        label: t('meetingMinutes.style_faq'),
                       },
                       {
                         value: 'newspaper',
                         label: t('meetingMinutes.style_newspaper'),
                       },
                       {
-                        value: 'faq',
-                        label: t('meetingMinutes.style_faq'),
+                        value: 'transcription',
+                        label: t('meetingMinutes.style_transcription'),
                       },
                       {
                         value: 'custom',
@@ -546,7 +577,12 @@ const MeetingMinutesPage: React.FC = () => {
                   </Button>
                   <Button
                     onClick={handleManualGeneration}
-                    disabled={formattedOutput === '' || minutesLoading}>
+                    disabled={
+                      formattedOutput === '' ||
+                      minutesLoading ||
+                      (minutesStyle === 'custom' &&
+                        (!customPrompt || customPrompt.trim() === ''))
+                    }>
                     {t('meetingMinutes.generate')}
                   </Button>
                 </div>

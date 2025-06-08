@@ -5,9 +5,9 @@ import { getPrompter } from '../prompts';
 import { UnrecordedMessage, Model } from 'generative-ai-use-cases';
 
 export type MeetingMinutesStyle =
-  | 'transcription'
-  | 'newspaper'
   | 'faq'
+  | 'newspaper'
+  | 'transcription'
   | 'custom';
 
 export const useMeetingMinutes = () => {
@@ -15,8 +15,7 @@ export const useMeetingMinutes = () => {
   const { modelIds: availableModels, textModels } = MODELS;
 
   // Meeting minutes specific state
-  const [minutesStyle, setMinutesStyle] =
-    useState<MeetingMinutesStyle>('transcription');
+  const [minutesStyle, setMinutesStyle] = useState<MeetingMinutesStyle>('faq');
   const [autoGenerate, setAutoGenerate] = useState(false);
   const [generationFrequency, setGenerationFrequency] = useState(5); // in minutes
   const [generatedMinutes, setGeneratedMinutes] = useState('');
