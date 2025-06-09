@@ -20,6 +20,7 @@ import {
   PiPenNib,
   PiMicrophoneBold,
   PiFileText,
+  PiGraph,
 } from 'react-icons/pi';
 import AwsIcon from '../assets/aws.svg?react';
 import useInterUseCases from '../hooks/useInterUseCases';
@@ -36,6 +37,7 @@ import {
   WebContentPageQueryParams,
   VideoAnalyzerPageQueryParams,
   DiagramPageQueryParams,
+  McpPageQueryParams,
 } from '../@types/navigate';
 import queryString from 'query-string';
 import { MODELS } from '../hooks/useModel';
@@ -47,6 +49,7 @@ const ragKnowledgeBaseEnabled: boolean =
   import.meta.env.VITE_APP_RAG_KNOWLEDGE_BASE_ENABLED === 'true';
 const agentEnabled: boolean = import.meta.env.VITE_APP_AGENT_ENABLED === 'true';
 const inlineAgents: boolean = import.meta.env.VITE_APP_INLINE_AGENTS === 'true';
+const mcpEnabled: boolean = import.meta.env.VITE_APP_MCP_ENABLED === 'true';
 const {
   imageGenModelIds,
   videoGenModelIds,
@@ -94,6 +97,13 @@ const LandingPage: React.FC = () => {
     } else {
       navigate(`/agent`);
     }
+  };
+
+  const demoMcp = () => {
+    const params: McpPageQueryParams = {
+      content: t('landing.demo.mcp.content'),
+    };
+    navigate(`/mcp?${queryString.stringify(params)}`);
   };
 
   const demoVoiceChat = () => {
@@ -313,6 +323,14 @@ const LandingPage: React.FC = () => {
             onClickDemo={demoAgent}
             icon={<PiRobot />}
             description={t('landing.use_cases.agent_chat.description')}
+          />
+        )}
+        {mcpEnabled && (
+          <CardDemo
+            label={t('landing.use_cases.mcp_chat.title')}
+            onClickDemo={demoMcp}
+            icon={<PiGraph />}
+            description={t('landing.use_cases.mcp_chat.description')}
           />
         )}
         {flowChatEnabled && (
