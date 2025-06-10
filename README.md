@@ -50,6 +50,11 @@ GenU provides a variety of standard use cases leveraging generative AI. These us
         <td>LLMs are good at summarizing large amounts of text. Beyond simple summarization, they can also extract necessary information in a conversational format after being given text as context. For example, after reading a contract, you can ask questions like "What are the conditions for XXX?" or "What is the amount for YYY?"</td>
       </tr>
       <tr>
+        <td>Meeting Minutes</td>
+        <td>Automatically generate meeting minutes from audio recordings or real-time transcription. Choose from Transcription, News Paper, or FAQ style with zero prompt engineering required.
+        </td>
+      </tr>
+      <tr>
         <td>Writing</td>
         <td>LLMs can suggest improvements from a more objective perspective, considering not only typos but also the flow and content of the text. You can expect to improve quality by having the LLM objectively check points you might have missed before showing your work to others.</td>
       </tr>
@@ -76,11 +81,6 @@ GenU provides a variety of standard use cases leveraging generative AI. These us
       <tr>
         <td>Diagram Generation</td>
         <td>Diagram generation visualizes text and content on any topic using optimal diagrams. It allows for easy text-based diagram creation, enabling efficient creation of flowcharts and other diagrams even for non-programmers and non-designers.</td>
-      </tr>
-      <tr>
-        <td>Meeting Minutes</td>
-        <td>Automatically generate meeting minutes from audio recordings or real-time transcription. Choose from Transcription, News Paper, or FAQ style with zero prompt engineering required.
-        </td>
       </tr>
       <tr>
         <td>Voice Chat</td>

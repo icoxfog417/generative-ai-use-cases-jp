@@ -21,7 +21,7 @@ import {
   PiMagicWand,
   PiMicrophoneBold,
   PiTreeStructure,
-  PiFileText,
+  PiNotebook,
 } from 'react-icons/pi';
 import { Outlet } from 'react-router-dom';
 import Drawer, { ItemProps } from './components/Drawer';
@@ -158,6 +158,14 @@ const App: React.FC = () => {
           display: 'usecase' as const,
         }
       : null,
+    enabled('meetingMinutes')
+      ? {
+          label: t('navigation.meetingMinutes'),
+          to: '/meeting-minutes',
+          icon: <PiNotebook />,
+          display: 'usecase' as const,
+        }
+      : null,
     enabled('writer')
       ? {
           label: t('navigation.writing'),
@@ -219,12 +227,6 @@ const App: React.FC = () => {
       to: '/transcribe',
       icon: <PiSpeakerHighBold />,
       display: 'tool' as const,
-    },
-    {
-      label: t('navigation.meetingMinutes'),
-      to: '/meeting-minutes',
-      icon: <PiFileText />,
-      display: 'usecase' as const,
     },
     optimizePromptEnabled
       ? {

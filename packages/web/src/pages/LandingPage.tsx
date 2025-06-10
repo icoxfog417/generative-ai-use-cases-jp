@@ -19,7 +19,6 @@ import {
   PiTreeStructure,
   PiPenNib,
   PiMicrophoneBold,
-  PiFileText,
 } from 'react-icons/pi';
 import AwsIcon from '../assets/aws.svg?react';
 import useInterUseCases from '../hooks/useInterUseCases';
@@ -347,6 +346,14 @@ const LandingPage: React.FC = () => {
             description={t('landing.use_cases.summarize.description')}
           />
         )}
+        {enabled('meetingMinutes') && (
+          <CardDemo
+            label={t('landing.use_cases.meeting-minutes.title')}
+            onClickDemo={demoMeetingMinutes}
+            icon={<PiNotebook />}
+            description={t('landing.use_cases.meeting-minutes.description')}
+          />
+        )}
         {enabled('writer') && (
           <CardDemo
             label={t('landing.use_cases.writer.title')}
@@ -401,14 +408,6 @@ const LandingPage: React.FC = () => {
             onClickDemo={demoGenerateDiagram}
             icon={<PiTreeStructure />}
             description={t('landing.use_cases.diagram.description')}
-          />
-        )}
-        {enabled('meetingMinutes') && (
-          <CardDemo
-            label={t('landing.use_cases.meeting-minutes.title')}
-            onClickDemo={demoMeetingMinutes}
-            icon={<PiFileText />}
-            description={t('landing.use_cases.meeting-minutes.description')}
           />
         )}
       </div>

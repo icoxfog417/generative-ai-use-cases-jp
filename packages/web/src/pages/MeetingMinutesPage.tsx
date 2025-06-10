@@ -406,11 +406,11 @@ const MeetingMinutesPage: React.FC = () => {
 
               {/* Audio Input Controls */}
               <div className="mb-4">
-                <div className="mb-2 flex justify-center text-sm text-gray-500">
+                <div className="mb-2 flex justify-start text-sm text-gray-500">
                   {t('transcribe.select_input_method')}
                 </div>
-                <div className="mb-4 flex flex-col justify-center sm:flex-row">
-                  <div className="basis-1/2 p-2 xl:basis-2/5">
+                <div className="mb-4 flex flex-col justify-center lg:flex-row">
+                  <div className="basis-full p-2 lg:basis-3/5 xl:basis-1/2">
                     <label className="mb-2 block font-bold">
                       {t('transcribe.mic_input')}
                     </label>
@@ -439,7 +439,7 @@ const MeetingMinutesPage: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  <div className="basis-1/2 p-2 xl:basis-2/5">
+                  <div className="basis-full p-2 lg:basis-3/5 xl:basis-1/2">
                     <label
                       className="mb-2 block font-bold"
                       htmlFor="file_input">

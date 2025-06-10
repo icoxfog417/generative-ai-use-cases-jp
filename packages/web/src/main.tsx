@@ -94,6 +94,12 @@ const routes: RouteObject[] = [
         element: <SummarizePage />,
       }
     : null,
+  enabled('meetingMinutes')
+    ? {
+        path: '/meeting-minutes',
+        element: <MeetingMinutesPage />,
+      }
+    : null,
   enabled('writer')
     ? {
         path: '/writer',
@@ -140,12 +146,6 @@ const routes: RouteObject[] = [
     path: '/transcribe',
     element: <TranscribePage />,
   },
-  enabled('meetingMinutes')
-    ? {
-        path: '/meeting-minutes',
-        element: <MeetingMinutesPage />,
-      }
-    : null,
   {
     path: '/flow-chat',
     element: <FlowChatPage />,
