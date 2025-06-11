@@ -77,13 +77,16 @@ const AgentChatPage: React.FC = () => {
     getModelId,
     setModelId,
     loading,
+    writing,
     loadingMessages,
     isEmpty,
     messages,
     clear,
     postChat,
+    editChat,
     updateSystemContextByModel,
     retryGeneration,
+    forceToStop,
   } = useChat(pathname);
   const { scrollableContainer, setFollowing } = useFollow();
   const { agentNames: availableModels } = MODELS;
@@ -173,6 +176,30 @@ const AgentChatPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clear]);
 
+  const onStop = useCallback(() => {
+    forceToStop();
+    setSessionId(uuidv4());
+  }, [forceToStop, setSessionId]);
+
+  const onEdit = useCallback(
+    (modifiedPrompt: string) => {
+      setFollowing(true);
+      editChat(
+        modifiedPrompt,
+        false,
+        undefined,
+        undefined,
+        sessionId,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        base64Cache
+      );
+    },
+    [editChat, sessionId, base64Cache, setFollowing]
+  );
+
   const showingMessages = useMemo(() => {
     return messages;
   }, [messages]);
@@ -258,6 +285,12 @@ const AgentChatPage: React.FC = () => {
                   loading={loading && idx === showingMessages.length - 1}
                   allowRetry={idx === showingMessages.length - 1}
                   retryGeneration={onRetry}
+                  editable={idx === showingMessages.length - 2 && !loading}
+                  onCommitEdit={
+                    idx === showingMessages.length - 2 && !loading
+                      ? onEdit
+                      : undefined
+                  }
                 />
                 <div className="w-full border-b border-gray-300"></div>
               </div>
@@ -271,16 +304,21 @@ const AgentChatPage: React.FC = () => {
         <div className="fixed bottom-0 z-0 flex w-full flex-col items-center justify-center lg:pr-64 print:hidden">
           <InputChatContent
             content={content}
-            disabled={loading}
+            disabled={loading && !writing}
             onChangeContent={setContent}
             resetDisabled={false}
             onSend={() => {
-              onSend();
+              if (!loading) {
+                onSend();
+              } else {
+                onStop();
+              }
             }}
             onReset={onReset}
             fileUpload={true}
             fileLimit={fileLimit}
             accept={fileLimit.accept.doc}
+            canStop={writing}
           />
         </div>
       </div>
