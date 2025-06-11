@@ -11,6 +11,7 @@ import {
 } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import Setting from './pages/Setting';
+import StatPage from './pages/StatPage.tsx';
 import ChatPage from './pages/ChatPage';
 import SharedChatPage from './pages/SharedChatPage';
 import SummarizePage from './pages/SummarizePage';
@@ -71,6 +72,10 @@ const routes: RouteObject[] = [
   {
     path: '/setting',
     element: <Setting />,
+  },
+  {
+    path: '/stats',
+    element: <StatPage />,
   },
   {
     path: '/chat',
