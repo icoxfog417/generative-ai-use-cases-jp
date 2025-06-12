@@ -174,6 +174,10 @@ const LandingPage: React.FC = () => {
     navigate(`/diagram?${queryString.stringify(params)}`);
   };
 
+  const demoMeetingMinutes = () => {
+    navigate('/meeting-minutes');
+  };
+
   const demoBlog = () => {
     setIsShow(true);
     init(t('landing.use_cases_integration.blog.title'), [
@@ -358,6 +362,14 @@ const LandingPage: React.FC = () => {
             onClickDemo={demoSummarize}
             icon={<PiNote />}
             description={t('landing.use_cases.summarize.description')}
+          />
+        )}
+        {enabled('meetingMinutes') && (
+          <CardDemo
+            label={t('landing.use_cases.meeting-minutes.title')}
+            onClickDemo={demoMeetingMinutes}
+            icon={<PiNotebook />}
+            description={t('landing.use_cases.meeting-minutes.description')}
           />
         )}
         {enabled('writer') && (

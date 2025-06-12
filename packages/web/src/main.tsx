@@ -26,6 +26,7 @@ import GenerateImagePage from './pages/GenerateImagePage';
 import GenerateVideoPage from './pages/GenerateVideoPage';
 import OptimizePromptPage from './pages/OptimizePromptPage';
 import TranscribePage from './pages/TranscribePage';
+import MeetingMinutesPage from './pages/MeetingMinutesPage';
 import AgentChatPage from './pages/AgentChatPage.tsx';
 import FlowChatPage from './pages/FlowChatPage';
 import VoiceChatPage from './pages/VoiceChatPage';
@@ -98,6 +99,12 @@ const routes: RouteObject[] = [
     ? {
         path: '/summarize',
         element: <SummarizePage />,
+      }
+    : null,
+  enabled('meetingMinutes')
+    ? {
+        path: '/meeting-minutes',
+        element: <MeetingMinutesPage />,
       }
     : null,
   enabled('writer')

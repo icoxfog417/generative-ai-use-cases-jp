@@ -702,6 +702,9 @@ claude:
         XXXは邪馬台国記念病院の心臓専門医です。連絡先は XXXまたは XXX です。 </output> </example> 個人情報を XXX
         に置き換えたテキストを <output>からはじめ、</output> タグで終えて出力してください。
       title: 個人情報削除
+translation:
+  meetingMinutes:
+    custom_prompt_required: 議事録作成用のプロンプトを入力してください
 useCaseBuilder:
   classification:
     mailClassification:
