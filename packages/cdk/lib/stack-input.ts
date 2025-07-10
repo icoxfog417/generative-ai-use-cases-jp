@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Common Validator
-export const stackInputSchema = z.object({
+// Base schema without refine
+const baseStackInputSchema = z.object({
   account: z.string().default(process.env.CDK_DEFAULT_ACCOUNT ?? ''),
   region: z.string().default(process.env.CDK_DEFAULT_REGION ?? 'us-east-1'),
   env: z.string().default(''),
@@ -42,6 +42,8 @@ export const stackInputSchema = z.object({
       ])
     )
     .default([
+      'us.anthropic.claude-sonnet-4-20250514-v1:0',
+      'us.anthropic.claude-opus-4-20250514-v1:0',
       'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
       'us.anthropic.claude-3-5-haiku-20241022-v1:0',
       'us.amazon.nova-premier-v1:0',
@@ -123,6 +125,7 @@ export const stackInputSchema = z.object({
   agentEnabled: z.boolean().default(false),
   searchAgentEnabled: z.boolean().default(false),
   searchApiKey: z.string().nullish(),
+  searchEngine: z.enum(['Brave', 'Tavily']).default('Brave'),
   agents: z
     .array(
       z.object({
@@ -162,8 +165,23 @@ export const stackInputSchema = z.object({
   dashboard: z.boolean().default(false),
 });
 
+// Common Validator with refine
+export const stackInputSchema = baseStackInputSchema.refine(
+  (data) => {
+    // If searchApiKey is provided, searchEngine must also be provided
+    if (data.searchApiKey && !data.searchEngine) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: 'searchEngine is required when searchApiKey is provided',
+    path: ['searchEngine'],
+  }
+);
+
 // schema after conversion
-export const processedStackInputSchema = stackInputSchema.extend({
+export const processedStackInputSchema = baseStackInputSchema.extend({
   modelIds: z.array(
     z.object({
       modelId: z.string(),
