@@ -38,7 +38,10 @@ export const modelMetadata: Record<string, ModelMetadata> = {
     displayName: 'Claude 3.5 Sonnet v2',
   },
   'anthropic.claude-3-5-haiku-20241022-v1:0': {
-    flags: MODEL_FEATURE.TEXT_DOC_IMAGE,
+    flags: {
+      ...MODEL_FEATURE.TEXT_DOC_IMAGE,
+      ...MODEL_FEATURE.LIGHT,
+    },
     displayName: 'Claude 3.5 Haiku',
   },
   'anthropic.claude-3-5-sonnet-20240620-v1:0': {
@@ -85,7 +88,10 @@ export const modelMetadata: Record<string, ModelMetadata> = {
     displayName: 'Claude 3.5 Sonnet v2',
   },
   'us.anthropic.claude-3-5-haiku-20241022-v1:0': {
-    flags: MODEL_FEATURE.TEXT_DOC_IMAGE,
+    flags: {
+      ...MODEL_FEATURE.TEXT_DOC_IMAGE,
+      ...MODEL_FEATURE.LIGHT,
+    },
     displayName: 'Claude 3.5 Haiku',
   },
   'us.anthropic.claude-3-5-sonnet-20240620-v1:0': {
@@ -380,6 +386,15 @@ export const modelMetadata: Record<string, ModelMetadata> = {
   'us.writer.palmyra-x5-v1:0': {
     flags: MODEL_FEATURE.TEXT_DOC,
     displayName: 'Palmyra X5',
+  },
+  // OpenAI
+  'openai.gpt-oss-120b-1:0': {
+    flags: MODEL_FEATURE.TEXT_ONLY,
+    displayName: 'GPT OSS 120B',
+  },
+  'openai.gpt-oss-20b-1:0': {
+    flags: MODEL_FEATURE.TEXT_ONLY,
+    displayName: 'GPT OSS 20B',
   },
 
   // === Image ===
