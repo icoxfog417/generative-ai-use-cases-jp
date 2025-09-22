@@ -48,7 +48,7 @@ export interface BackendApiProps {
   readonly imageGenerationModelIds: ModelConfiguration[];
   readonly videoGenerationModelIds: ModelConfiguration[];
   readonly videoBucketRegionMap: Record<string, string>;
-  readonly endpointNames: string[];
+  readonly endpointNames: ModelConfiguration[];
   readonly queryDecompositionEnabled: boolean;
   readonly rerankingModelId?: string | null;
   readonly customAgents: Agent[];
@@ -72,6 +72,7 @@ export interface BackendApiProps {
   readonly vpc?: IVpc;
   readonly securityGroups?: ISecurityGroup[];
   readonly apiGatewayVpcEndpoint?: InterfaceVpcEndpoint;
+  readonly cognitoUserPoolProxyEndpoint?: string;
 }
 
 export class Api extends Construct {
@@ -83,7 +84,7 @@ export class Api extends Construct {
   readonly modelIds: ModelConfiguration[];
   readonly imageGenerationModelIds: ModelConfiguration[];
   readonly videoGenerationModelIds: ModelConfiguration[];
-  readonly endpointNames: string[];
+  readonly endpointNames: ModelConfiguration[];
   readonly agentNames: string[];
   readonly fileBucket: Bucket;
   readonly getFileDownloadSignedUrlFunction: IFunction;
@@ -205,6 +206,7 @@ export class Api extends Construct {
       environment: {
         USER_POOL_ID: userPool.userPoolId,
         USER_POOL_CLIENT_ID: userPoolClient.userPoolClientId,
+        USER_POOL_PROXY_ENDPOINT: props.cognitoUserPoolProxyEndpoint ?? '',
         MODEL_REGION: modelRegion,
         MODEL_IDS: JSON.stringify(modelIds),
         IMAGE_GENERATION_MODEL_IDS: JSON.stringify(imageGenerationModelIds),
@@ -505,9 +507,9 @@ export class Api extends Construct {
         actions: ['sagemaker:DescribeEndpoint', 'sagemaker:InvokeEndpoint'],
         resources: endpointNames.map(
           (endpointName) =>
-            `arn:aws:sagemaker:${modelRegion}:${
+            `arn:aws:sagemaker:${endpointName.region}:${
               Stack.of(this).account
-            }:endpoint/${endpointName}`
+            }:endpoint/${endpointName.modelId}`
         ),
       });
       predictFunction.role?.addToPrincipalPolicy(sagemakerPolicy);
