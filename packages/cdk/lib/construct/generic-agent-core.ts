@@ -185,6 +185,23 @@ export class GenericAgentCore extends Construct {
       })
     );
 
+    // Add permission to create AgentCore service-linked role (required since Oct 13, 2025)
+    role.addToPolicy(
+      new PolicyStatement({
+        sid: 'CreateBedrockAgentCoreRuntimeIdentityServiceLinkedRole',
+        effect: Effect.ALLOW,
+        actions: ['iam:CreateServiceLinkedRole'],
+        resources: [
+          `arn:aws:iam::*:role/aws-service-role/runtime-identity.bedrock-agentcore.amazonaws.com/AWSServiceRoleForBedrockAgentCoreRuntimeIdentity`,
+        ],
+        conditions: {
+          StringEquals: {
+            'iam:AWSServiceName': 'runtime-identity.bedrock-agentcore.amazonaws.com',
+          },
+        },
+      })
+    );
+
     return role;
   }
 
