@@ -31,6 +31,7 @@ import {
   applyAutoCacheToSystem,
 } from './promptCache';
 import { getFormatFromMimeType, getMimeTypeFromFileName } from './media';
+import { convertToSafeFilename } from './fileNameUtils';
 
 // Default Models
 
@@ -108,6 +109,20 @@ export const defaultVideoGenerationModel: Model = {
 };
 
 // Model Params
+const CLAUDE_SONNET_4_DEFAULT_PARAMS: ConverseInferenceParams = {
+  inferenceConfig: {
+    maxTokens: 64000,
+    temperature: 1,
+  },
+};
+
+const CLAUDE_OPUS_4_DEFAULT_PARAMS: ConverseInferenceParams = {
+  inferenceConfig: {
+    maxTokens: 32000,
+    temperature: 1,
+    topP: 0.999,
+  },
+};
 
 const CLAUDE_3_5_DEFAULT_PARAMS: ConverseInferenceParams = {
   inferenceConfig: {
@@ -189,6 +204,31 @@ const DEEPSEEK_DEFAULT_PARAMS: ConverseInferenceParams = {
     maxTokens: 32768,
     temperature: 0.6,
     topP: 0.95,
+  },
+};
+
+// Qwen3 model parameters based on actual AWS Bedrock limits
+const QWEN_16K_DEFAULT_PARAMS: ConverseInferenceParams = {
+  inferenceConfig: {
+    maxTokens: 16384,
+    temperature: 0.7,
+    topP: 0.9,
+  },
+};
+
+const QWEN_64K_DEFAULT_PARAMS: ConverseInferenceParams = {
+  inferenceConfig: {
+    maxTokens: 65536,
+    temperature: 0.7,
+    topP: 0.9,
+  },
+};
+
+const QWEN_192K_DEFAULT_PARAMS: ConverseInferenceParams = {
+  inferenceConfig: {
+    maxTokens: 196608,
+    temperature: 0.7,
+    topP: 0.9,
   },
 };
 
@@ -389,9 +429,7 @@ const createConverseCommandInput = (
           contentBlocks.push({
             document: {
               format,
-              name: extra.name
-                .split('.')[0]
-                .replace(/[^a-zA-Z0-9\s\-()[\]]/g, 'X'), // If the file name contains Japanese, it will cause an error, so convert it
+              name: convertToSafeFilename(extra.name),
               source: {
                 bytes: Buffer.from(extra.source.data, 'base64'),
               },
@@ -466,9 +504,7 @@ const createConverseCommandInput = (
       ...params.inferenceConfig,
       temperature: 1, // reasoning requires temperature to be 1
       topP: undefined, // reasoning does not require topP
-      maxTokens:
-        (model.modelParameters?.reasoningConfig?.budgetTokens || 0) +
-        (params.inferenceConfig?.maxTokens || 0),
+      maxTokens: params.inferenceConfig?.maxTokens,
     };
     converseCommandInput.additionalModelRequestFields = {
       reasoning_config: {
@@ -923,7 +959,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
   };
 } = {
   'us.anthropic.claude-opus-4-1-20250805-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_OPUS_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -931,7 +967,71 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'us.anthropic.claude-opus-4-20250514-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_OPUS_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'global.anthropic.claude-sonnet-4-5-20250929-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'us.anthropic.claude-sonnet-4-5-20250929-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'eu.anthropic.claude-sonnet-4-5-20250929-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'jp.anthropic.claude-sonnet-4-5-20250929-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'global.anthropic.claude-haiku-4-5-20251001-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'us.anthropic.claude-haiku-4-5-20251001-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'eu.anthropic.claude-haiku-4-5-20251001-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'jp.anthropic.claude-haiku-4-5-20251001-v1:0': {
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -939,7 +1039,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'global.anthropic.claude-sonnet-4-20250514-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -947,7 +1047,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'us.anthropic.claude-sonnet-4-20250514-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -955,7 +1055,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'eu.anthropic.claude-sonnet-4-20250514-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -963,7 +1063,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'apac.anthropic.claude-sonnet-4-20250514-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -1003,7 +1103,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'us.anthropic.claude-3-7-sonnet-20250219-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -1011,7 +1111,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'eu.anthropic.claude-3-7-sonnet-20250219-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -1019,7 +1119,7 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'apac.anthropic.claude-3-7-sonnet-20250219-v1:0': {
-    defaultParams: CLAUDE_3_5_DEFAULT_PARAMS,
+    defaultParams: CLAUDE_SONNET_4_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -1139,30 +1239,6 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
   'apac.anthropic.claude-3-haiku-20240307-v1:0': {
-    defaultParams: CLAUDE_DEFAULT_PARAMS,
-    usecaseParams: USECASE_DEFAULT_PARAMS,
-    createConverseCommandInput: createConverseCommandInput,
-    createConverseStreamCommandInput: createConverseStreamCommandInput,
-    extractConverseOutput: extractConverseOutput,
-    extractConverseStreamOutput: extractConverseStreamOutput,
-  },
-  'anthropic.claude-v2:1': {
-    defaultParams: CLAUDE_DEFAULT_PARAMS,
-    usecaseParams: USECASE_DEFAULT_PARAMS,
-    createConverseCommandInput: createConverseCommandInput,
-    createConverseStreamCommandInput: createConverseStreamCommandInput,
-    extractConverseOutput: extractConverseOutput,
-    extractConverseStreamOutput: extractConverseStreamOutput,
-  },
-  'anthropic.claude-v2': {
-    defaultParams: CLAUDE_DEFAULT_PARAMS,
-    usecaseParams: USECASE_DEFAULT_PARAMS,
-    createConverseCommandInput: createConverseCommandInput,
-    createConverseStreamCommandInput: createConverseStreamCommandInput,
-    extractConverseOutput: extractConverseOutput,
-    extractConverseStreamOutput: extractConverseStreamOutput,
-  },
-  'anthropic.claude-instant-v1': {
     defaultParams: CLAUDE_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
@@ -1463,8 +1539,48 @@ export const BEDROCK_TEXT_GEN_MODELS: {
     extractConverseOutput: extractConverseOutput,
     extractConverseStreamOutput: extractConverseStreamOutput,
   },
+  'deepseek.v3-v1:0': {
+    defaultParams: DEEPSEEK_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
   'us.deepseek.r1-v1:0': {
     defaultParams: DEEPSEEK_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'qwen.qwen3-235b-a22b-2507-v1:0': {
+    defaultParams: QWEN_192K_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'qwen.qwen3-32b-v1:0': {
+    defaultParams: QWEN_16K_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'qwen.qwen3-coder-480b-a35b-v1:0': {
+    defaultParams: QWEN_64K_DEFAULT_PARAMS,
+    usecaseParams: USECASE_DEFAULT_PARAMS,
+    createConverseCommandInput: createConverseCommandInput,
+    createConverseStreamCommandInput: createConverseStreamCommandInput,
+    extractConverseOutput: extractConverseOutput,
+    extractConverseStreamOutput: extractConverseStreamOutput,
+  },
+  'qwen.qwen3-coder-30b-a3b-v1:0': {
+    defaultParams: QWEN_192K_DEFAULT_PARAMS,
     usecaseParams: USECASE_DEFAULT_PARAMS,
     createConverseCommandInput: createConverseCommandInput,
     createConverseStreamCommandInput: createConverseStreamCommandInput,
@@ -1524,19 +1640,7 @@ export const BEDROCK_IMAGE_GEN_MODELS: {
     createBodyImage: createBodyImageStableDiffusion,
     extractOutputImage: extractOutputImageStableDiffusion,
   },
-  'stability.sd3-large-v1:0': {
-    createBodyImage: createBodyImageStabilityAI2024Model,
-    extractOutputImage: extractOutputImageStabilityAI2024Model,
-  },
-  'stability.stable-image-core-v1:0': {
-    createBodyImage: createBodyImageStabilityAI2024Model,
-    extractOutputImage: extractOutputImageStabilityAI2024Model,
-  },
   'stability.stable-image-core-v1:1': {
-    createBodyImage: createBodyImageStabilityAI2024Model,
-    extractOutputImage: extractOutputImageStabilityAI2024Model,
-  },
-  'stability.stable-image-ultra-v1:0': {
     createBodyImage: createBodyImageStabilityAI2024Model,
     extractOutputImage: extractOutputImageStabilityAI2024Model,
   },
