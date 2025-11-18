@@ -704,6 +704,8 @@ AgentCore で作成したエージェントと連携するユースケースで�
 デフォルトでは `modelRegion` にデプロイされますが、`agentCoreRegion` を指定し上書きすることが可能です。
 
 AgentCore で使用できるデフォルトのエージェントは、[mcp.json](https://github.com/aws-samples/generative-ai-use-cases/blob/main/packages/cdk/lambda-python/generic-agent-core-runtime/mcp.json) で定義する MCP サーバーを利用することができます。
+このデフォルトのエージェントは Agent Builder で利用でき、ユーザーは管理者が許可した MCP から任意のエージェントを作成することができます。
+
 デフォルトで定義されている MCP サーバーは、AWS に関連する MCP サーバー及び、現在時刻に関連する MCP サーバーです。
 詳細は[こちら](https://awslabs.github.io/mcp/)のドキュメントをご参照ください。
 MCP サーバーを追加する場合は上述の `mcp.json` に追記してください。
@@ -1510,6 +1512,38 @@ const envs: Record<string, Partial<StackInput>> = {
 }
 ```
 
+## ブランディングカスタマイズ
+
+ランディングページに表示されるロゴとタイトルをカスタマイズできます。
+
+### 設定方法
+
+1. `packages/cdk/branding.json` にカスタム設定を作成：
+
+```json
+{
+  "logoPath": "your-logo.svg",
+  "title": "カスタムタイトル"
+}
+```
+
+2. カスタムSVGロゴファイルを `packages/web/src/assets/` に配置：
+
+```
+packages/web/src/assets/your-logo.svg
+```
+
+### パラメータ
+
+- `logoPath` (オプション): `packages/web/src/assets/` 内のSVGロゴファイル名
+- `title` (オプション): 表示するカスタムタイトルテキスト
+
+### 注意事項
+
+- `branding.json` が存在しない場合、デフォルトのAWSロゴとタイトルが使用されます
+- カスタムロゴはSVG形式のみサポートされています
+- ロゴは80x80ピクセル（size-20クラス）で表示されます
+
 ## セキュリティ関連設定
 
 ### セルフサインアップを無効化する
@@ -1815,7 +1849,7 @@ Kendraのインデックスが削除されても、RAG機能はオンのまま�
 
 ### タグを設定する方法
 
-GenU ではコスト管理等に使うためのタグをサポートしています。タグのキー名には、自動で `GenU` `が設定されます。
+GenU ではコスト管理等に使うためのタグをサポートしています。デフォルトでは、タグのキー名に `GenU` が設定されますが、`tagKey` を指定することでカスタムのタグキーを使用できます。
 以下に設定例を示します。
 
 `cdk.json` での設定方法
@@ -1824,6 +1858,7 @@ GenU ではコスト管理等に使うためのタグをサポートしていま
 // cdk.json
   ...
   "context": {
+    "tagKey": "MyProject",  // カスタムのタグキー（省略可能、デフォルトは "GenU"）
     "tagValue": "dev",
     ...
 ```
@@ -1832,6 +1867,7 @@ GenU ではコスト管理等に使うためのタグをサポートしていま
 
 ```typescript
     ...
+    tagKey: "MyProject",   // カスタムのタグキー（省略可能、デフォルトは "GenU"）
     tagValue: "dev",
     ...
 ```
