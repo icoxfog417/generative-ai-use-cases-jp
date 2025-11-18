@@ -32,16 +32,15 @@ const envs: Record<string, Partial<StackInput>> = {
     allowedSignUpEmailDomains: ["amazon.com", "amazon.co.jp"],
     ragKnowledgeBaseEnabled: true,
     modelIds: [
-      "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-      "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-      "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "us.anthropic.claude-opus-4-20250514-v1:0",
+      "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "us.anthropic.claude-haiku-4-5-20251001-v1:0",
       "us.anthropic.claude-sonnet-4-20250514-v1:0",
+      "openai.gpt-oss-120b-1:0",
+      "openai.gpt-oss-20b-1:0",
       "us.amazon.nova-premier-v1:0",
       "us.amazon.nova-pro-v1:0",
       "us.amazon.nova-lite-v1:0",
       "us.amazon.nova-micro-v1:0",
-      "us.deepseek.r1-v1:0",
       { modelId: "us.writer.palmyra-x5-v1:0", region: "us-west-2" },
     ],
     imageGenerationModelIds: [
@@ -50,7 +49,8 @@ const envs: Record<string, Partial<StackInput>> = {
       { modelId: "stability.stable-image-core-v1:1", region: "us-west-2" },
       { modelId: "stability.stable-image-ultra-v1:1", region: "us-west-2" }
     ],
-    agentEnabled: true,
+    createGenericAgentCoreRuntime: true,
+    agentCoreRegion: 'us-east-1'
   },
   // If you need other environments, customize them as needed
 };
