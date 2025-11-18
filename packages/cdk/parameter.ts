@@ -35,12 +35,11 @@ const envs: Record<string, Partial<StackInput>> = {
       "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
       "us.anthropic.claude-haiku-4-5-20251001-v1:0",
       "us.anthropic.claude-sonnet-4-20250514-v1:0",
-      "openai.gpt-oss-120b-1:0",
+      "openai.gpt-oss-120b-1:0"
       "openai.gpt-oss-20b-1:0",
       "us.amazon.nova-premier-v1:0",
       "us.amazon.nova-pro-v1:0",
       "us.amazon.nova-lite-v1:0",
-      "us.amazon.nova-micro-v1:0",
       { modelId: "us.writer.palmyra-x5-v1:0", region: "us-west-2" },
     ],
     imageGenerationModelIds: [
