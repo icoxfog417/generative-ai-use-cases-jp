@@ -47,9 +47,7 @@ const envs: Record<string, Partial<StackInput>> = {
       { modelId: "stability.sd3-5-large-v1:0", region: "us-west-2" },
       { modelId: "stability.stable-image-core-v1:1", region: "us-west-2" },
       { modelId: "stability.stable-image-ultra-v1:1", region: "us-west-2" }
-    ],
-    createGenericAgentCoreRuntime: true,
-    agentCoreRegion: 'us-east-1'
+    ]
   },
   // If you need other environments, customize them as needed
 };
