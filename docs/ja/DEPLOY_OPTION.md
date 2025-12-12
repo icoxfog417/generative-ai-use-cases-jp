@@ -703,15 +703,18 @@ AgentCore で作成したエージェントと連携するユースケースで�
 `createGenericAgentCoreRuntime` を有効化するとデフォルトの AgentCore Runtime がデプロイされます。
 デフォルトでは `modelRegion` にデプロイされますが、`agentCoreRegion` を指定し上書きすることが可能です。
 
-AgentCore で使用できるデフォルトのエージェントは、[mcp.json](https://github.com/aws-samples/generative-ai-use-cases/blob/main/packages/cdk/lambda-python/generic-agent-core-runtime/mcp.json) で定義する MCP サーバーを利用することができます。
-このデフォルトのエージェントは Agent Builder で利用でき、ユーザーは管理者が許可した MCP から任意のエージェントを作成することができます。
+AgentCore で使用できるデフォルトのエージェントは、[generic/mcp.json](packages/cdk/lambda-python/generic-agent-core-runtime/mcp-configs/generic/mcp.json) で定義する MCP サーバーを利用することができます。
 
 デフォルトで定義されている MCP サーバーは、AWS に関連する MCP サーバー及び、現在時刻に関連する MCP サーバーです。
 詳細は[こちら](https://awslabs.github.io/mcp/)のドキュメントをご参照ください。
-MCP サーバーを追加する場合は上述の `mcp.json` に追記してください。
-ただし、`uvx` 以外で起動する MCP サーバーは Dockefile の書き換え等開発が必要です。
+MCP サーバーを追加する場合は上述の `generic/mcp.json` に追記してください。
 
 `agentCoreExternalRuntimes` で外部で作成した AgentCore Runtime を利用することが可能です。
+
+AgentCore Runtime から AWS 外部のサービスにアクセスする場合、AgentCore Gateway を使用します。
+`agentCoreGatewayArns` に Gateway の ARN を指定することで、最小権限の原則に従った IAM ポリシーが設定されます。
+設定後、MCP 設定で `mcp-proxy-for-aws` を使用してエンドポイントを指定します。
+詳細は [mcp-proxy-for-aws のドキュメント](https://github.com/aws/mcp-proxy-for-aws)を参照してください。
 
 AgentCore ユースケースを有効化するためには、`docker` コマンドが実行可能である必要があります。
 
@@ -740,6 +743,9 @@ const envs: Record<string, Partial<StackInput>> = {
   dev: {
     createGenericAgentCoreRuntime: true,
     agentCoreRegion: 'us-west-2',
+    agentCoreGatewayArns: [
+      'arn:aws:bedrock-agentcore:us-west-2:<account>:gateway/<gateway-id>',
+    ],
     agentCoreExternalRuntimes: [
       {
         name: 'AgentCore1',
@@ -759,11 +765,59 @@ const envs: Record<string, Partial<StackInput>> = {
   "context": {
     "createGenericAgentCoreRuntime": true,
     "agentCoreRegion": "us-west-2",
+    "agentCoreGatewayArns": [
+      "arn:aws:bedrock-agentcore:us-west-2:<account>:gateway/<gateway-id>"
+    ],
     "agentCoreExternalRuntimes": [
       {
         "name": "AgentCore1",
         "arn": "arn:aws:bedrock-agentcore:us-west-2:<account>:runtime/agent-core1-xxxxxxxx"
       }
+    ]
+  }
+}
+```
+
+### AgentBuilder ユースケースの有効化
+
+ユーザーがシステムプロンプトと任意の MCP を設定することでユースケースごとの Agent を自由に作成できるユースケースです。(Experimental: 予告なく破壊的変更を行うことがあります)
+
+AgentCore ユースケースと同様に [agent-builder/mcp.json](packages/cdk/lambda-python/generic-agent-core-runtime/mcp-configs/agent-builder/mcp.json) にて管理者側で MCP を事前に登録します。管理者が登録したものからユーザーが好きな MCP を選択式で利用できます。
+
+`agentBuilderEnabled` を有効化すると Agent Builder 向けの AgentCore Runtime がデプロイされます。
+デフォルトでは `modelRegion` にデプロイされますが、`agentCoreRegion` を指定し上書きすることが可能です。
+
+AWS 外部のサービスにアクセスする場合、AgentCore Gateway を使用します。
+`agentCoreGatewayArns` に Gateway の ARN を指定することで、最小権限の原則に従った IAM ポリシーが設定されます。
+設定後、MCP 設定で `mcp-proxy-for-aws` を使用してエンドポイントを指定します。
+詳細は [mcp-proxy-for-aws のドキュメント](https://github.com/aws/mcp-proxy-for-aws)を参照してください。
+
+**[parameter.ts](/packages/cdk/parameter.ts) を編集**
+
+```typescript
+// parameter.ts
+const envs: Record<string, Partial<StackInput>> = {
+  dev: {
+    agentBuilderEnabled: true,
+    agentCoreRegion: 'us-west-2',
+    agentCoreGatewayArns: [
+      'arn:aws:bedrock-agentcore:us-west-2:<account>:gateway/<gateway-id>',
+    ],
+  },
+};
+```
+
+**[packages/cdk/cdk.json](/packages/cdk/cdk.json) を編集**
+
+```json
+// cdk.json
+
+{
+  "context": {
+    "agentBuilderEnabled": true,
+    "agentCoreRegion": "us-west-2",
+    "agentCoreGatewayArns": [
+      "arn:aws:bedrock-agentcore:us-west-2:<account>:gateway/<gateway-id>"
     ]
   }
 }
@@ -805,7 +859,7 @@ const envs: Record<string, Partial<StackInput>> = {
 "anthropic.claude-3-haiku-20240307-v1:0",
 "global.anthropic.claude-opus-4-5-20251101-v1:0",
 "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
-"global.anthropic.claude-haiku-4-5-20251001-v1:0"
+"global.anthropic.claude-haiku-4-5-20251001-v1:0",
 "global.anthropic.claude-sonnet-4-20250514-v1:0",
 "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
 "us.anthropic.claude-haiku-4-5-20251001-v1:0"
@@ -831,11 +885,13 @@ const envs: Record<string, Partial<StackInput>> = {
 "apac.anthropic.claude-3-5-sonnet-20240620-v1:0",
 "apac.anthropic.claude-3-5-sonnet-20241022-v2:0",
 "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
-"jp.anthropic.claude-haiku-4-5-20251001-v1:0"
+"jp.anthropic.claude-haiku-4-5-20251001-v1:0",
+"qwen.qwen3-vl-235b-a22b",
 "us.meta.llama4-maverick-17b-instruct-v1:0",
 "us.meta.llama4-scout-17b-instruct-v1:0",
 "us.meta.llama3-2-90b-instruct-v1:0",
 "us.meta.llama3-2-11b-instruct-v1:0",
+"mistral.magistral-small-2509",
 "us.mistral.pixtral-large-2502-v1:0",
 "eu.mistral.pixtral-large-2502-v1:0",
 "amazon.nova-pro-v1:0",
@@ -843,10 +899,17 @@ const envs: Record<string, Partial<StackInput>> = {
 "us.amazon.nova-premier-v1:0",
 "us.amazon.nova-pro-v1:0",
 "us.amazon.nova-lite-v1:0",
+"us.amazon.nova-2-lite-v1:0",
 "eu.amazon.nova-pro-v1:0",
 "eu.amazon.nova-lite-v1:0",
 "apac.amazon.nova-pro-v1:0",
-"apac.amazon.nova-lite-v1:0"
+"apac.amazon.nova-lite-v1:0",
+"jp.amazon.nova-2-lite-v1:0",
+"global.amazon.nova-2-lite-v1:0",
+"google.gemma-3-4b-it",
+"google.gemma-3-12b-it",
+"google.gemma-3-27b-it",
+"nvidia.nemotron-nano-12b-v2",
 ```
 
 これらのいずれかが `modelIds` に定義されている必要があります。
@@ -1008,6 +1071,8 @@ const envs: Record<string, Partial<StackInput>> = {
 "qwen.qwen3-32b-v1:0",
 "qwen.qwen3-coder-480b-a35b-v1:0",
 "qwen.qwen3-coder-30b-a3b-v1:0",
+"qwen.qwen3-next-80b-a3b",
+"qwen.qwen3-vl-235b-a22b",
 "us.writer.palmyra-x5-v1:0",
 "us.writer.palmyra-x4-v1:0",
 "amazon.titan-text-premier-v1:0",
@@ -1032,6 +1097,11 @@ const envs: Record<string, Partial<StackInput>> = {
 "eu.mistral.pixtral-large-2502-v1:0",
 "mistral.mixtral-8x7b-instruct-v0:1",
 "mistral.mistral-7b-instruct-v0:2",
+"mistral.mistral-large-3-675b-instruct",
+"mistral.ministral-3-3b-instruct",
+"mistral.ministral-3-8b-instruct",
+"mistral.ministral-3-14b-instruct",
+"mistral.magistral-small-2509",
 "amazon.nova-pro-v1:0",
 "amazon.nova-lite-v1:0",
 "amazon.nova-micro-v1:0",
@@ -1039,14 +1109,24 @@ const envs: Record<string, Partial<StackInput>> = {
 "us.amazon.nova-pro-v1:0",
 "us.amazon.nova-lite-v1:0",
 "us.amazon.nova-micro-v1:0",
+"us.amazon.nova-2-lite-v1:0",
 "eu.amazon.nova-pro-v1:0",
 "eu.amazon.nova-lite-v1:0",
 "eu.amazon.nova-micro-v1:0",
 "apac.amazon.nova-pro-v1:0",
 "apac.amazon.nova-lite-v1:0",
 "apac.amazon.nova-micro-v1:0",
+"jp.amazon.nova-2-lite-v1:0",
+"global.amazon.nova-2-lite-v1:0",
 "openai.gpt-oss-120b-1:0",
-"openai.gpt-oss-20b-1:0"
+"openai.gpt-oss-20b-1:0",
+"google.gemma-3-4b-it",
+"google.gemma-3-12b-it",
+"google.gemma-3-27b-it",
+"minimax.minimax-m2",
+"moonshot.kimi-k2-thinking",
+"nvidia.nemotron-nano-9b-v2",
+"nvidia.nemotron-nano-12b-v2",
 ```
 
 このソリューションが対応している speech-to-speech モデルは以下です。
