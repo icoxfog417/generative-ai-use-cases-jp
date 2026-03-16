@@ -32,14 +32,12 @@ const envs: Record<string, Partial<StackInput>> = {
     allowedSignUpEmailDomains: ["amazon.com", "amazon.co.jp"],
     ragKnowledgeBaseEnabled: true,
     modelIds: [
-      "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "us.anthropic.claude-opus-4-6-v1",
+      "us.anthropic.claude-sonnet-4-6",
       "us.anthropic.claude-haiku-4-5-20251001-v1:0",
-      "us.anthropic.claude-sonnet-4-20250514-v1:0",
       "openai.gpt-oss-120b-1:0",
       "openai.gpt-oss-20b-1:0",
-      "us.amazon.nova-premier-v1:0",
-      "us.amazon.nova-pro-v1:0",
-      "us.amazon.nova-lite-v1:0",
+      "us.amazon.nova-2-lite-v1:0",
       { modelId: "us.writer.palmyra-x5-v1:0", region: "us-west-2" }
     ],
     imageGenerationModelIds: [
